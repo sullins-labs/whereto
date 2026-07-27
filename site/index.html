@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where To — finding your balance of city, space and cost</title>
+<meta name="description" content="The real question isn't which metro. It's how far out from one. Set what matters; see where the balance lands.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* surfaces — cool, low chroma */
+  --bg:#F4F7FA;
+  --surface:#FFFFFF;
+  --surface-2:#EBF0F6;
+  --surface-3:#E1E8F0;
+
+  /* line */
+  --outline:#C3CFDB;
+  --outline-soft:#DEE6EE;
+
+  /* text */
+  --on:#16222E;
+  --on-var:#465767;
+  --on-dim:#78899A;
+
+  /* accent — a single blue, used at three strengths */
+  --primary:#1668C4;
+  --primary-strong:#0F4E99;
+  --primary-container:#DAE8F8;
+  --state:rgba(22,104,196,.06);
+
+  /* the deficit tone: still cool, reads as weight not warmth */
+  --deficit:#0A2C4D;
+  --neutral-bar:#AFBDCB;
+  --track:#E4EAF1;
+
+  /* Every fallback in every stack is explicitly sans-serif. The generic
+     mono keyword resolves to Courier New on most systems, which is a serif
+     face -- so there is no such face here at all. Numerals get their column
+     alignment from tabular figures instead. */
+  --f-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+  --f-display:"DM Sans",var(--f-sans);
+  --f-body:"Roboto",var(--f-sans);
+  --f-num:"Roboto",var(--f-sans);
+
+  --r-card:12px;
+  --r-pill:100px;
+  --r-sm:8px;
+
+  --e1:0 1px 2px rgba(13,32,51,.05),0 1px 3px 1px rgba(13,32,51,.04);
+  --e2:0 1px 2px rgba(13,32,51,.07),0 2px 8px 2px rgba(13,32,51,.06);
+
+  --panel-w:352px;
+  --maxw:1400px;
+  --mast:57px;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);color:var(--on);
+  font-family:var(--f-body);font-size:14.5px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none;padding:0}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
+.mono{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
+
+/* label style — sentence case, never uppercase */
+.label{display:block;font-size:11.5px;font-weight:500;color:var(--on-dim);letter-spacing:.01em}
+
+/* ---------------- masthead ---------------- */
+.masthead{
+  position:sticky;top:0;z-index:40;
+  background:var(--surface);border-bottom:1px solid var(--outline-soft);
+}
+.masthead-in{
+  max-width:var(--maxw);margin:0 auto;padding:13px 24px;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+}
+.wordmark{
+  font-family:var(--f-display);font-weight:700;font-size:19px;
+  letter-spacing:-.018em;margin:0;color:var(--on);
+}
+.wordmark b{color:var(--primary);font-weight:700}
+.masthead-q{font-size:13.5px;color:var(--on-var);margin:0;flex:1 1 260px;min-width:0}
+.chip{
+  font-family:var(--f-num);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1;font-size:11px;color:var(--on-var);
+  background:var(--surface-2);border-radius:var(--r-pill);
+  padding:5px 12px;white-space:nowrap;
+}
+
+/* ---------------- notice ---------------- */
+.notice{background:var(--surface-2);border-bottom:1px solid var(--outline-soft)}
+.notice-in{
+  max-width:var(--maxw);margin:0 auto;padding:11px 24px;
+  display:flex;gap:11px;align-items:flex-start;font-size:13px;color:var(--on-var);
+}
+.notice-in svg{flex:none;margin-top:2px;color:var(--primary)}
+.notice-in b{color:var(--on);font-weight:500}
+
+/* ---------------- layout ---------------- */
+.shell{
+  max-width:var(--maxw);margin:0 auto;
+  display:grid;grid-template-columns:var(--panel-w) minmax(0,1fr);align-items:start;
+}
+.panel{
+  padding:22px 22px 60px;position:sticky;top:var(--mast);
+  max-height:calc(100vh - var(--mast));overflow-y:auto;scrollbar-width:thin;
+}
+.results{padding:22px 24px 80px;min-width:0}
+
+/* ---------------- panel cards ---------------- */
+.card{
+  background:var(--surface);border-radius:var(--r-card);
+  box-shadow:var(--e1);padding:16px 16px 14px;margin-bottom:14px;
+}
+.card > h2{
+  font-family:var(--f-display);font-weight:600;font-size:14.5px;
+  margin:0 0 3px;letter-spacing:-.005em;
+}
+.card > p.hint{font-size:12.5px;color:var(--on-dim);margin:0 0 14px;line-height:1.45}
+.sub-h{
+  font-size:12px;font-weight:500;color:var(--primary);
+  margin:16px 0 9px;padding-bottom:6px;border-bottom:1px solid var(--outline-soft);
+}
+.sub-h:first-of-type{margin-top:0}
+
+/* weight rows */
+.wrow{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.wlabel{flex:1;font-size:13.5px;min-width:0;line-height:1.25}
+.wlabel em{display:block;font-style:normal;font-size:11px;color:var(--on-dim)}
+.seg{
+  display:flex;flex:none;border:1px solid var(--outline);
+  border-radius:var(--r-pill);overflow:hidden;background:var(--surface);
+}
+.seg button{
+  width:24px;height:26px;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1;font-size:11px;
+  color:var(--on-dim);border-right:1px solid var(--outline-soft);
+  transition:background .13s,color .13s;
+}
+.seg button:last-child{border-right:none}
+.seg button:hover{background:var(--state)}
+.seg button[aria-pressed="true"]{background:var(--primary-container);color:var(--primary-strong);font-weight:500}
+
+/* pill groups */
+.pills{
+  display:flex;flex-wrap:wrap;gap:6px;
+}
+.pills button{
+  padding:6px 13px;border:1px solid var(--outline);border-radius:var(--r-pill);
+  font-size:12.5px;color:var(--on-var);background:var(--surface);
+  transition:background .13s,color .13s,border-color .13s;
+}
+.pills button:hover{background:var(--state)}
+.pills button[aria-pressed="true"]{
+  background:var(--primary-container);border-color:var(--primary-container);
+  color:var(--primary-strong);font-weight:500;
+}
+
+.field{margin-bottom:12px}
+.field > label{display:block;font-size:12.5px;color:var(--on-var);margin-bottom:5px}
+.field input,.field select{
+  width:100%;padding:9px 11px;background:var(--surface);
+  border:1px solid var(--outline);border-radius:var(--r-sm);
+  font-family:var(--f-num);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1;font-size:13px;
+}
+.field input:focus,.field select:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 2px var(--primary-container)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.readout{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;color:var(--on-var);margin-bottom:3px}
+.readout b{font-weight:500;color:var(--on);font-variant-numeric:tabular-nums;font-size:13.5px}
+.slider{width:100%;-webkit-appearance:none;appearance:none;background:transparent;height:22px;margin:0;padding:0;border:none}
+.slider::-webkit-slider-runnable-track{height:4px;background:var(--track);border-radius:2px}
+.slider::-moz-range-track{height:4px;background:var(--track);border-radius:2px}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--primary);margin-top:-6px;border:none}
+.slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--primary);border:none}
+.slider:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px var(--primary-container)}
+.slider:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px var(--primary-container)}
+.scalekey{display:flex;justify-content:space-between;font-size:11px;color:var(--on-dim);margin:-6px 0 10px}
+
+.textbtn{font-size:12.5px;color:var(--primary);font-weight:500;padding:4px 0}
+.textbtn:hover{text-decoration:underline;text-underline-offset:3px}
+
+.check{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--on-var);cursor:pointer;margin-top:2px}
+.check input{width:16px;height:16px;accent-color:var(--primary);flex:none}
+
+/* ---------------- results head ---------------- */
+.rhead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.rhead h1{
+  font-family:var(--f-display);font-weight:600;
+  font-size:clamp(21px,2.8vw,28px);line-height:1.14;letter-spacing:-.02em;
+  margin:0;max-width:22ch;
+}
+.rcount{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1;font-size:11.5px;color:var(--on-dim);white-space:nowrap;padding-bottom:4px}
+
+.legend{
+  display:flex;gap:15px;flex-wrap:wrap;align-items:center;
+  font-size:11.5px;color:var(--on-dim);
+  background:var(--surface);border-radius:var(--r-card);
+  padding:9px 14px;margin-bottom:10px;box-shadow:var(--e1);
+}
+.legend .k{display:flex;align-items:center;gap:6px}
+.swatch{width:10px;height:10px;border-radius:2px;flex:none}
+
+/* ---------------- rows ---------------- */
+.rows{display:flex;flex-direction:column;gap:6px}
+.row{
+  display:grid;grid-template-columns:30px minmax(0,1fr) 146px 58px;
+  gap:14px;align-items:center;width:100%;text-align:left;
+  background:var(--surface);border-radius:var(--r-card);
+  box-shadow:var(--e1);padding:12px 16px 12px 12px;
+  transition:box-shadow .15s,background .13s;
+}
+.row:hover{box-shadow:var(--e2);background:#FCFDFF}
+.row[aria-current="true"]{box-shadow:var(--e2),inset 3px 0 0 var(--primary)}
+.rank{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1;font-size:12px;color:var(--on-dim);text-align:right}
+.rank.top{color:var(--primary);font-weight:500}
+.place{min-width:0}
+.place .nm{display:block;
+  font-family:var(--f-display);font-weight:600;font-size:15.5px;
+  letter-spacing:-.012em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.place .sub{display:block;
+  font-size:12.5px;color:var(--on-dim);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.place .sub .warn{color:var(--deficit);font-weight:500}
+.sig{display:block}
+.fit{text-align:right}
+.fit .n{display:block;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1;font-size:19px;font-weight:500;line-height:1;letter-spacing:-.02em}
+.fit .bar{display:block;height:3px;background:var(--track);border-radius:2px;margin-top:6px;position:relative;overflow:hidden}
+.fit .bar i{position:absolute;inset:0 auto 0 0;background:var(--primary);border-radius:2px}
+
+.empty{
+  background:var(--surface);border-radius:var(--r-card);box-shadow:var(--e1);
+  padding:34px 24px;color:var(--on-var);font-size:14px;max-width:48ch;
+}
+.empty b{display:block;font-family:var(--f-display);font-weight:600;font-size:16px;margin-bottom:6px;color:var(--on)}
+
+/* ---------------- detail sheet ---------------- */
+.scrim{position:fixed;inset:0;background:rgba(16,34,49,.32);opacity:0;pointer-events:none;transition:opacity .2s;z-index:50}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{
+  position:fixed;top:0;right:0;bottom:0;width:min(500px,100%);
+  background:var(--bg);transform:translateX(100%);
+  transition:transform .27s cubic-bezier(.4,0,.2,1);
+  z-index:51;display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(13,32,51,.12);
+}
+.sheet.on{transform:none}
+.sheet-hd{
+  padding:18px 22px 15px;background:var(--surface);
+  border-bottom:1px solid var(--outline-soft);
+  display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
+}
+.sheet-hd h2{font-family:var(--f-display);font-weight:600;font-size:21px;line-height:1.15;letter-spacing:-.018em;margin:0 0 3px}
+.sheet-hd p{margin:0;font-size:12.5px;color:var(--on-dim)}
+.close{
+  width:34px;height:34px;border-radius:var(--r-pill);flex:none;
+  display:grid;place-items:center;color:var(--on-var);
+}
+.close:hover{background:var(--surface-2)}
+.sheet-bd{padding:16px 18px 44px;overflow-y:auto;flex:1}
+.sheet-bd .card{padding:15px 16px}
+
+.verdict{font-size:14px;line-height:1.55;color:var(--on-var);margin:0}
+.verdict b{color:var(--on);font-weight:500}
+.verdict .neg{color:var(--deficit);font-weight:500}
+
+.big{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1;font-size:27px;font-weight:500;letter-spacing:-.025em;line-height:1;margin:6px 0 5px}
+.cap{font-size:12.5px;color:var(--on-dim);line-height:1.45;margin:0}
+.ledger{margin-top:13px;border-top:1px solid var(--outline-soft);padding-top:9px}
+.ledger div{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;padding:3.5px 0;color:var(--on-var)}
+.ledger div span:last-child{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1;white-space:nowrap}
+.ledger div.tot{border-top:1px solid var(--outline-soft);margin-top:6px;padding-top:9px;color:var(--on);font-weight:500}
+
+.frow{display:grid;grid-template-columns:112px 1fr 34px;gap:11px;align-items:center;margin-bottom:9px}
+.frow .fl{font-size:12.5px;color:var(--on-var);line-height:1.25}
+.frow .fl em{display:block;font-style:normal;font-size:10.5px;color:var(--on-dim)}
+.track{height:15px;background:var(--track);border-radius:4px;position:relative;overflow:hidden}
+.track i{position:absolute;top:0;bottom:0;display:block;border-radius:2px}
+.track u{position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--outline)}
+.frow .fv{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1;font-size:11.5px;text-align:right;color:var(--on-var)}
+.frow.off{opacity:.4}
+
+.kv{margin:0;display:grid;grid-template-columns:1fr auto;gap:0 12px}
+.kv dt{font-size:12.5px;color:var(--on-var);padding:6px 0;border-bottom:1px solid var(--outline-soft)}
+.kv dd{margin:0;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1;font-size:12.5px;text-align:right;padding:6px 0;border-bottom:1px solid var(--outline-soft);white-space:nowrap}
+.kv dt:last-of-type,.kv dd:last-of-type{border-bottom:none}
+
+.note{font-size:11.5px;color:var(--on-dim);margin:11px 0 0;line-height:1.45}
+
+/* ---------------- sources ---------------- */
+.sources{margin-top:36px;background:var(--surface);border-radius:var(--r-card);box-shadow:var(--e1);padding:22px 24px 24px}
+.sources h2{font-family:var(--f-display);font-weight:600;font-size:18px;margin:0 0 6px;letter-spacing:-.015em}
+.sources > p{font-size:13.5px;color:var(--on-var);margin:0 0 18px;max-width:66ch}
+.stable{width:100%;border-collapse:collapse;font-size:12.5px}
+.stable th{
+  font-size:11.5px;font-weight:500;color:var(--on-dim);text-align:left;
+  padding:0 12px 8px 0;border-bottom:1px solid var(--outline);
+}
+.stable td{padding:8px 12px 8px 0;border-bottom:1px solid var(--outline-soft);vertical-align:top;color:var(--on-var)}
+.stable td:first-child{color:var(--on)}
+.stable .lic{font-size:12px}
+.ok{color:var(--primary)}
+.rs{color:var(--deficit);font-weight:500}
+
+footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5px;color:var(--on-dim)}
+
+/* ---------------- motion ---------------- */
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.row{animation:rise .28s both}
+.sig rect{transform-origin:center;animation:grow .4s both cubic-bezier(.2,.8,.3,1)}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0ms!important;transition-duration:.001ms!important}
+}
+
+/* ---------------- responsive ---------------- */
+@media (max-width:940px){
+  .shell{grid-template-columns:1fr}
+  .panel{position:static;max-height:none;padding-bottom:6px}
+  .results{padding-top:8px}
+  .row{grid-template-columns:26px minmax(0,1fr) 56px;gap:12px}
+  .sig{display:none}
+  .sheet{width:100%}
+}
+@media (max-width:430px){
+  .masthead-q{display:none}
+  .rhead h1{font-size:20px}
+}
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-in">
+    <p class="wordmark">Where<b>To</b></p>
+    <p class="masthead-q">The question isn't which metro. It's how far out from one, and who you'd be living among.</p>
+    <span class="chip" id="vintage">Seed v0.4 · 60 anchors × 5 rings</span>
+  </div>
+</header>
+
+<div class="notice">
+  <div class="notice-in">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.9" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4M8 4.6v.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <p style="margin:0"><b>Seed data — interface build.</b> Values are plausible placeholders shaped like the real pipeline output, so the instrument can be designed and tested. They are not sourced figures. The ETL that replaces them is specified at the bottom of the page.</p>
+  </div>
+</div>
+
+<main class="shell">
+  <aside class="panel" aria-label="Your priorities">
+
+    <div class="card">
+      <h2>Where you are in life</h2>
+      <p class="hint">This sets a sensible starting point for everything below, and changes how your money is worked out. You can still adjust anything.</p>
+      <div class="pills" id="phase" role="group" aria-label="Phase of life">
+        <button data-v="early" aria-pressed="false">Early career</button>
+        <button data-v="nokids" aria-pressed="false">Adults, no kids</button>
+        <button data-v="kids" aria-pressed="true">Raising kids</button>
+        <button data-v="empty" aria-pressed="false">Empty nest</button>
+        <button data-v="retired" aria-pressed="false">Retired</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>How far out?</h2>
+      <p class="hint">Each anchor city is split into five rings. This is usually the decision that matters most.</p>
+      <div class="pills" id="ring" role="group" aria-label="Preferred ring">
+        <button data-v="-1" aria-pressed="true">Let it decide</button>
+        <button data-v="0" aria-pressed="false">City core</button>
+        <button data-v="1" aria-pressed="false">Inner suburbs</button>
+        <button data-v="2" aria-pressed="false">Outer suburbs</button>
+        <button data-v="3" aria-pressed="false">Small town</button>
+        <button data-v="4" aria-pressed="false">Rural</button>
+      </div>
+      <label class="check" style="margin-top:12px">
+        <input type="checkbox" id="allrings">
+        <span>Show every ring, not just the best one per city</span>
+      </label>
+    </div>
+
+    <div class="card">
+      <h2>Political and social climate</h2>
+      <p class="hint">Scored as distance from where you say you want to be, so it works the same in either direction. Nothing here is rated better or worse.</p>
+      <div class="field">
+        <label>You'd rather live somewhere</label>
+        <div class="pills" id="politics" role="group" aria-label="Political preference">
+          <button data-v="-2" aria-pressed="false">Solidly conservative</button>
+          <button data-v="-1" aria-pressed="false">Leaning conservative</button>
+          <button data-v="0" aria-pressed="true">Mixed, or it's not a factor</button>
+          <button data-v="1" aria-pressed="false">Leaning progressive</button>
+          <button data-v="2" aria-pressed="false">Solidly progressive</button>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>What are you actually matching on?</label>
+        <div class="pills" id="polscope" role="group" aria-label="Political scope">
+          <button data-v="state" aria-pressed="false">State laws</button>
+          <button data-v="local" aria-pressed="false">My neighbours</button>
+          <button data-v="both" aria-pressed="true">Both</button>
+        </div>
+        <p class="note">State law follows you into a rural county; local culture doesn't. Rings shift the local reading a long way — the same state can hold both.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>What matters to you</h2>
+      <p class="hint">Rate each from 0 to 5. Zero drops it entirely; five makes it decisive.</p>
+      <div class="scalekey" aria-hidden="true"><span>0 ignore</span><span>2 nice</span><span>3 matters</span><span>5 decisive</span></div>
+      <p class="sub-h">Land, nature and access</p>
+      <div id="w-place"></div>
+      <p class="sub-h">Community and services</p>
+      <div id="w-comm"></div>
+      <p class="sub-h">Money and practicalities</p>
+      <div id="w-money"></div>
+      <button class="textbtn" id="reset">Reset to this phase of life</button>
+    </div>
+
+    <div class="card">
+      <h2>Your weather</h2>
+      <p class="hint">Set the actual temperatures you want, because "warm" isn't a unit — one person's hot summer is another's mild one.</p>
+      <div class="field">
+        <div class="readout"><label for="sumTarget">Ideal summer daytime high</label><b id="sumOut">80°F</b></div>
+        <input type="range" class="slider" id="sumTarget" min="62" max="105" step="1" value="80">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <div class="readout"><label for="winTarget">Ideal winter nighttime low</label><b id="winOut">30°F</b></div>
+        <input type="range" class="slider" id="winTarget" min="-5" max="65" step="1" value="30">
+        <p class="note">City cores run a few degrees warmer than the rural edge of the same metro, most of all overnight. That's built into each ring.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Your household</h2>
+      <p class="hint" id="household-hint">Used to work out what's actually left over after every tax and housing.</p>
+
+      <div id="working-fields">
+        <div class="field">
+          <label for="income">Household income, before tax</label>
+          <input type="number" id="income" value="140000" min="0" step="5000" inputmode="numeric">
+        </div>
+      </div>
+
+      <div id="retired-fields" hidden>
+        <div class="field">
+          <label for="ss">Social Security, per year</label>
+          <input type="number" id="ss" value="48000" min="0" step="1000" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="wd">Pension and withdrawals, per year</label>
+          <input type="number" id="wd" value="62000" min="0" step="1000" inputmode="numeric">
+        </div>
+        <p class="note" style="margin:-4px 0 12px">Nine states tax no income at all. Others exempt Social Security but tax withdrawals, and a few still tax part of Social Security. That difference is worth five figures a year.</p>
+      </div>
+
+      <div class="three">
+        <div class="field">
+          <label for="adults">Adults</label>
+          <input type="number" id="adults" value="2" min="1" max="6" step="1" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="kids">Children</label>
+          <input type="number" id="kids" value="1" min="0" max="8" step="1" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="tenure">Housing</label>
+          <select id="tenure">
+            <option value="own" selected>Buying</option>
+            <option value="rent">Renting</option>
+          </select>
+        </div>
+      </div>
+      <div class="two">
+        <div class="field">
+          <label for="dogs">Dogs</label>
+          <input type="number" id="dogs" value="1" min="0" max="8" step="1" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="cats">Cats</label>
+          <input type="number" id="cats" value="0" min="0" max="8" step="1" inputmode="numeric">
+        </div>
+      </div>
+      <p class="note" style="margin:-4px 0 12px">Veterinary care, food and boarding all track local price levels, and run higher in dense areas where practice overheads are.</p>
+      <div class="field" id="portable-field" style="margin-bottom:0">
+        <label>Does your income depend on where you live?</label>
+        <div class="pills" id="portable" role="group" aria-label="Income portability">
+          <button data-v="remote" aria-pressed="true">No, fully remote</button>
+          <button data-v="local" aria-pressed="false">Yes, local job</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Rule things out</h2>
+      <div class="field">
+        <div class="readout"><label for="maxhome">Most you'd pay for a home</label><b id="maxhomeOut">No limit</b></div>
+        <input type="range" class="slider" id="maxhome" min="0" max="21" step="1" value="21">
+      </div>
+      <div class="field">
+        <label for="minlot">Smallest lot you'd accept</label>
+        <select id="minlot">
+          <option value="0" selected>No minimum</option>
+          <option value="0.25">A quarter acre</option><option value="0.5">Half an acre</option>
+          <option value="1">One acre</option><option value="5">Five acres</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="maxcommute">Longest drive to a city centre</label>
+        <select id="maxcommute">
+          <option value="0" selected>No limit</option>
+          <option value="20">20 minutes</option><option value="35">35 minutes</option>
+          <option value="60">1 hour</option><option value="90">1½ hours</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label for="region">Region</label>
+        <select id="region">
+          <option value="all" selected>Anywhere in the U.S.</option>
+          <option value="Northeast">Northeast</option><option value="South">South</option>
+          <option value="Midwest">Midwest</option><option value="Mountain">Mountain West</option>
+          <option value="West">West Coast</option>
+        </select>
+      </div>
+    </div>
+  </aside>
+
+  <section class="results" aria-label="Ranked results">
+    <div class="rhead">
+      <h1 id="headline">Where should you choose to live?</h1>
+      <span class="rcount mono" id="rcount"></span>
+    </div>
+
+    <div class="legend" aria-hidden="true">
+      <span class="label">Fit signature</span>
+      <span class="k"><span class="swatch" style="background:var(--primary)"></span> above the median</span>
+      <span class="k"><span class="swatch" style="background:var(--neutral-bar)"></span> below</span>
+      <span class="k"><span class="swatch" style="background:var(--deficit)"></span> weak, and you said it matters</span>
+    </div>
+
+    <div class="rows" id="rows"></div>
+
+    <section class="sources">
+      <h2>Where the real numbers come from</h2>
+      <p>Each factor maps to a named public source with a known refresh cadence and licence. Ring-level values are derived from the anchor using published density, lot-size and travel-time distributions. Political readings are descriptive measures of enacted law and recorded voting, not endorsements, and they are scored only as distance from what you asked for.</p>
+      <table class="stable">
+        <thead><tr><th>Factor</th><th>Source</th><th>Cadence</th><th>Licence</th></tr></thead>
+        <tbody>
+          <tr><td>Cost of living</td><td>BEA Regional Price Parities</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
+          <tr><td>Home values, rents</td><td>Zillow ZHVI / ZORI research files</td><td>Monthly</td><td class="lic rs">Attribution; no redistribution</td></tr>
+          <tr><td>Lot size, home size, density</td><td>Census ACS + county assessor rolls</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
+          <tr><td>Drive times, ring geometry</td><td>OpenStreetMap + OSRM isochrones</td><td>Continuous</td><td class="lic rs">ODbL, share-alike</td></tr>
+          <tr><td>Income and property tax</td><td>State revenue schedules, Census property tax</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
+          <tr><td>Sales tax, combined</td><td>Tax Foundation state and local rates</td><td>Twice yearly</td><td class="lic rs">Attribution</td></tr>
+          <tr><td>Retirement income treatment</td><td>State revenue codes, NCSL summaries</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
+          <tr><td>Public pre-K coverage</td><td>NIEER State of Preschool yearbook</td><td>Annual</td><td class="lic rs">Attribution</td></tr>
+          <tr><td>In-state tuition, state grant aid</td><td>IPEDS; NASSGAP survey of state grant programs</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
+          <tr><td>Medicaid expansion, exchange support</td><td>CMS; KFF state health facts</td><td>Continuous</td><td class="lic rs">Attribution</td></tr>
+          <tr><td>Paid family leave, senior tax relief</td><td>State statutes; Lincoln Institute property tax database</td><td>Annual</td><td class="lic rs">Mixed</td></tr>
+          <tr><td>Public schools</td><td>NCES CCD, EDFacts, state assessments</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
+          <tr><td>State policy environment</td><td>Correlates of State Policy, NCSL, MAP, RAND firearm law database</td><td>Annual</td><td class="lic rs">Mixed; several academic-use</td></tr>
+          <tr><td>Local political lean</td><td>MIT Election Lab county returns</td><td>Per election</td><td class="lic rs">CC BY-NC</td></tr>
+          <tr><td>Forest and public land</td><td>USGS PAD-US, USFS boundaries</td><td>Periodic</td><td class="lic ok">Public domain</td></tr>
+          <tr><td>Coastline proximity</td><td>NOAA shoreline, USGS NHD</td><td>Periodic</td><td class="lic ok">Public domain</td></tr>
+          <tr><td>Wildfire, flood, wind, quake</td><td>FEMA National Risk Index v1.20, USFS wildfire risk, FEMA NFHL flood layers</td><td>Multi-year</td><td class="lic ok">Public domain</td></tr>
+          <tr><td>Hazard trajectory to 2050</td><td>Open-Meteo downscaled IPCC; NOAA sea level rise viewer</td><td>Model release</td><td class="lic rs">CC BY 4.0, non-commercial tier</td></tr>
+          <tr><td>Home insurance rates</td><td>Modelled from hazard exposure; calibrated to NAIC state averages</td><td>Annual</td><td class="lic ok">Derived</td></tr>
+          <tr><td>Violent and property crime</td><td>FBI Crime Data Explorer, NIBRS agency submissions</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
+          <tr><td>Climate normals and outlook</td><td>NOAA NCEI normals; Open-Meteo downscaled IPCC</td><td>Decadal; model release</td><td class="lic rs">CC BY 4.0, non-commercial tier</td></tr>
+          <tr><td>Air quality</td><td>EPA AirNow / AQS</td><td>Hourly, annual</td><td class="lic ok">Public domain</td></tr>
+          <tr><td>Healthcare access</td><td>HRSA shortage areas, AHRF, CDC PLACES</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
+        </tbody>
+      </table>
+      <p class="note" style="max-width:72ch">Federal statistical products have become less dependable: NOAA retired its billion-dollar disasters series after 2024, BLS cut consumer price collection in several cities, and FEMA took the National Risk Index application offline while leaving the data downloadable. Every source is snapshotted at ingest and never deleted, so a series that disappears upstream still survives here.</p>
+    </section>
+  </section>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-name" tabindex="-1">
+  <div class="sheet-hd">
+    <div><h2 id="sheet-name">—</h2><p id="sheet-sub">—</p></div>
+    <button class="close" id="close" aria-label="Close details">
+      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="sheet-bd" id="sheet-bd"></div>
+</aside>
+
+<footer>
+  <p style="margin:0 0 5px">Scoring runs entirely in your browser. Your income, household, politics and priorities are never sent anywhere.</p>
+  <p style="margin:0">Static build, no backend. <span class="mono">sullinslabs.com</span></p>
+</footer>
+
+<script>
+/* ============================================================
+   Data layer.
+
+   The dataset is no longer compiled into this file. It is fetched from
+   data/places.json, which the ETL writes. The contract between the two is
+   versioned: if the shape changes without this file being updated, the page
+   says so rather than rendering nulls that look like real zeroes.
+   ============================================================ */
+
+const CONTRACT_VERSION = 1;
+const PAGE = 60;          // rows rendered at once; ranking still scores them all
+let shown = PAGE;
+const DATA_URL = "data/places.json";
+
+const REGION_BY_STATE = {
+  ME:"Northeast",VT:"Northeast",NH:"Northeast",MA:"Northeast",RI:"Northeast",CT:"Northeast",
+  NY:"Northeast",NJ:"Northeast",PA:"Northeast",MD:"Northeast",DE:"Northeast",DC:"Northeast",
+  VA:"South",WV:"South",NC:"South",SC:"South",GA:"South",FL:"South",KY:"South",TN:"South",
+  AL:"South",MS:"South",AR:"South",LA:"South",OK:"South",TX:"South",
+  OH:"Midwest",MI:"Midwest",IN:"Midwest",IL:"Midwest",WI:"Midwest",MN:"Midwest",IA:"Midwest",
+  MO:"Midwest",ND:"Midwest",SD:"Midwest",NE:"Midwest",KS:"Midwest",
+  MT:"Mountain",ID:"Mountain",WY:"Mountain",CO:"Mountain",NM:"Mountain",AZ:"Mountain",
+  UT:"Mountain",NV:"Mountain",
+  WA:"West",OR:"West",CA:"West",AK:"West",HI:"West"
+};
+
+let LOCALES = [];
+let DATA_META = null;
+
+/* ---------- rings ----------
+   leanShift encodes the urban-rural political gradient, which is the most
+   reliable spatial regularity in American politics. It is what lets one
+   state hold both a solidly progressive core and a solidly conservative
+   fringe — and it is why "which state" is too blunt a question. */
+const BANDS=[
+ {k:0,tag:"city core",     priceM:1.20,lot:0.08,sqft:1450,space:6, walkM:1.34,cityM:1.00,wildM:0.60,coastM:1.00,healthM:1.04,airM:0.94,schoolM:0.86,leanShift:14, vetM:1.12,crimeV:2.10,crimeP:1.85,fireM:0.55,floodM:1.05,sumShift:2.5,winShift:4.0,commute:10},
+ {k:1,tag:"inner suburbs", priceM:1.06,lot:0.28,sqft:1950,space:28,walkM:0.96,cityM:0.95,wildM:0.80,coastM:0.96,healthM:1.01,airM:0.98,schoolM:1.06,leanShift:6,  vetM:1.05,crimeV:0.95,crimeP:1.05,fireM:0.75,floodM:1.00,sumShift:2.0,winShift:3.0,commute:22},
+ {k:2,tag:"outer suburbs", priceM:0.88,lot:0.62,sqft:2400,space:52,walkM:0.64,cityM:0.84,wildM:0.97,coastM:0.90,healthM:0.96,airM:1.02,schoolM:1.10,leanShift:-2, vetM:1.00,crimeV:0.58,crimeP:0.68,fireM:1.00,floodM:1.00,sumShift:1.0,winShift:1.5,commute:38},
+ {k:3,tag:"small towns",   priceM:0.67,lot:1.90,sqft:2150,space:76,walkM:0.44,cityM:0.64,wildM:1.16,coastM:0.84,healthM:0.88,airM:1.05,schoolM:0.94,leanShift:-14,vetM:0.93,crimeV:0.48,crimeP:0.52,fireM:1.35,floodM:0.98,sumShift:0.0,winShift:0.0,commute:62},
+ {k:4,tag:"rural",         priceM:0.51,lot:7.50,sqft:2050,space:96,walkM:0.26,cityM:0.42,wildM:1.32,coastM:0.78,healthM:0.78,airM:1.08,schoolM:0.84,leanShift:-24,vetM:0.88,crimeV:0.52,crimeP:0.42,fireM:1.55,floodM:0.95,sumShift:-0.5,winShift:-1.0,commute:92}
+];
+const cap=v=>Math.max(0,Math.min(100,v));
+
+/* Adapter. The engine was written against a nested shape; the contract is
+   flat. Rather than rewrite the scoring code, the seam lives here — one
+   function, easy to read, easy to delete when the contract carries every
+   field directly. Anything the pipeline does not yet publish is derived from
+   the ring and declared in `caveats`, so a modelled value never passes for a
+   measured one. */
+function localeFromRecord(p){
+  const b = BANDS[p.ring] || BANDS[2];
+  const derived = [];
+  const need = (v, fallback, why) => {
+    if (v !== undefined && v !== null) return v;
+    derived.push(why);
+    return fallback;
+  };
+  const cap = v => Math.max(0, Math.min(100, v));
+
+  const L = {
+    id: p.fips,
+    a: {
+      name: p.name, st: p.state, region: REGION_BY_STATE[p.state] || "South",
+      popK: Math.round((p.population||0)/1000), rpp: p.rpp,
+      precip: p.precip_in ?? 40, sun: 50,
+      stateTax: p.income_top_rate ?? 0, propTax: p.property_effective ?? 1.0,
+      salesTax: p.sales_combined ?? 0, retireCode: p.retire_code ?? 2,
+      stateLean: p.state_lean ?? 50,
+      preK: p.prek_coverage_pct ?? 0, tuition: p.tuition_instate ?? 11200,
+      grantAid: p.grant_aid_per_student ?? 0,
+      medicaid: p.medicaid_expansion ? 1 : 0, leave: p.paid_family_leave ? 1 : 0,
+      seniorBreak: p.senior_property_relief ?? 0,
+      hazTrend: p.hazard_trend ?? p.hazard_score ?? 30
+    },
+    b,
+    title: p.ring===3 ? `Small towns near ${p.anchor_name}`
+         : p.ring===4 ? `Rural, near ${p.anchor_name}`
+         : `${p.anchor_name} ${b.tag}`,
+    homeK: Math.round((p.median_home_value||0)/1000),
+    rent: p.rent_monthly ?? 1200,
+    lot: need(p.lot_acres, b.lot, "lot size derived from the ring"),
+    sqft: need(p.home_sqft, b.sqft, "home size derived from the ring"),
+    commute: p.drive_min,
+    localLean: p.local_lean ?? p.state_lean ?? 50,
+    sumHigh: p.summer_high_f, winLow: p.winter_low_f,
+    hazard: p.hazard_score ?? 30,
+    insRate: p.insurance_rate ?? 0.005,
+    crimeIdx: p.crime_index ?? null,
+    heatRisk: p.heat_wave ?? cap((p.summer_high_f-78)*3.6),
+    caveats: (p.caveats||[]).slice(),
+    v: {
+      space:   need(p.space_score,     b.space,                       "space derived from the ring"),
+      walk:    need(p.walk_score,      cap(60*b.walkM),               "walkability derived from the ring"),
+      city:    need(p.city_access,     cap(70*b.cityM),               "city access derived from the ring"),
+      coast:   need(p.coast_access,    30,                            "coast access not yet published"),
+      forest:  need(p.forest_access,   cap(55*b.wildM),               "forest access derived from the ring"),
+      mtn:     need(p.mountain_access, cap(40*b.wildM),               "mountain access not yet published"),
+      health:  need(p.pcp_per_100k!=null?cap(p.pcp_per_100k*1.1):null, cap(60*b.healthM), "healthcare derived from the ring"),
+      schools: need(p.spend_per_pupil!=null?cap(p.spend_per_pupil/220):null, cap(60*b.schoolM), "schools derived from the ring"),
+      air:     need(p.air_days_over!=null?cap(100-p.air_days_over*1.6):null, cap(70*b.airM), "air quality derived from the ring"),
+      wildfire:p.wildfire ?? 20, flood:p.flood ?? 30,
+      wind:    p.hurricane ?? 25, quake:p.earthquake ?? 10,
+      violent: p.violent_per_100k ?? null, property: p.property_per_100k ?? null
+    }
+  };
+  if (derived.length) L.caveats.push(...derived);
+  return L;
+}
+
+function buildLocalesLegacy(){
+  const out=[];
+  (typeof ANCHORS!=="undefined"?ANCHORS:[]).forEach(a=>BANDS.forEach(b=>{
+    const sizeF=0.82+0.34*Math.min(1,a.popK/6500);
+    out.push({
+      id:a.aid*10+b.k, a, b,
+      title: b.k===3?`Small towns near ${a.name}`
+           : b.k===4?`Rural, near ${a.name}`
+           : `${a.name} ${b.tag}`,
+      homeK:Math.round(a.homeK*b.priceM),
+      rent: Math.round(a.rent*(1+(b.priceM-1)*0.72)),
+      lot:  +(b.lot*(1+(100-a.rpp)/240)).toFixed(2),
+      sqft: Math.round(b.sqft*(a.rpp>112?0.9:1)),
+      commute:Math.round(b.commute*sizeF),
+      localLean:Math.round(cap(a.metroLean+b.leanShift)),
+      /* urban heat island, strongest overnight — a city core runs several
+         degrees warmer than the rural fringe of the same metro */
+      sumHigh:Math.round((a.julHigh+b.sumShift)*10)/10,
+      heatRisk:0,
+      winLow: Math.round((a.janLow+b.winShift)*10)/10,
+      v:{
+        space:b.space,
+        walk:cap(a.walk*b.walkM),
+        city:cap((a.culture*0.45+a.airport*0.32+a.jobs*0.23)*b.cityM),
+        coast:cap(a.coast*b.coastM),
+        forest:cap(a.forest*b.wildM),
+        mtn:cap(a.mountain*b.wildM),
+        health:cap(a.health*b.healthM),
+        schools:cap(a.schools*b.schoolM),
+        air:cap(a.air*b.airM),
+        /* Wildfire rises sharply moving outward — the wildland-urban
+           interface is where houses actually burn, not the city core. */
+        wildfire:cap(a.wildfire*b.fireM),
+        flood:cap(a.flood*b.floodM),
+        wind:a.wind, quake:a.quake,
+        violent:Math.round(a.violent*b.crimeV),
+        property:Math.round(a.property*b.crimeP)
+      }
+    });
+  }));
+  out.forEach(L=>{
+    L.heatRisk=cap((L.sumHigh-78)*3.6);
+    L.hazard=Math.round(L.v.wildfire*0.26+L.v.flood*0.28+L.v.wind*0.28+L.v.quake*0.10+L.heatRisk*0.08);
+    /* Homeowner premiums scale steeply with hazard, not linearly. This is
+       the mechanism by which climate risk becomes a housing-cost problem:
+       it arrives as an insurance bill long before it arrives as a disaster. */
+    L.insRate=0.003+Math.pow(L.hazard/100,1.6)*0.014;
+    L.crimeIdx=Math.round(L.v.violent/364*60+L.v.property/1900*40);
+  });
+  return out;
+}
+
+async function loadData(){
+  const res = await fetch(DATA_URL, {cache:"no-cache"});
+  if(!res.ok) throw new Error(`could not load ${DATA_URL} (${res.status})`);
+  const payload = await res.json();
+  if(payload.contract_version !== CONTRACT_VERSION){
+    throw new Error(
+      `data is contract v${payload.contract_version}, this page expects v${CONTRACT_VERSION}. ` +
+      `One of the two is out of date — the pipeline writes the version it built.`);
+  }
+  DATA_META = {
+    built_at: payload.built_at,
+    count: payload.place_count,
+    warnings: payload.warnings || [],
+    failures: payload.stage_failures || {}
+  };
+  LOCALES = payload.places.map(localeFromRecord);
+  LOCALES.forEach(L=>{ L.crimeIdx = L.crimeIdx ?? null; });
+}
+
+/* ---------- factors ---------- */
+const PLACE=[
+  {k:"climate",label:"Climate fit"},
+  {k:"space",  label:"Space and privacy",hint:"lot size, low density"},
+  {k:"coast",  label:"Ocean and coast",hint:"salt water fully, lakes partly"},
+  {k:"forest", label:"Forest and woodland"},
+  {k:"mtn",    label:"Mountains"},
+  {k:"city",   label:"City access",hint:"culture, flights, jobs"},
+  {k:"walk",   label:"Walkable and transit"}
+];
+const COMM=[
+  {k:"schools",  label:"Public schools"},
+  {k:"health",   label:"Healthcare access"},
+  {k:"crime",    label:"Safety from crime"},
+  {k:"politics", label:"Political fit",hint:"distance from what you chose"}
+];
+const MONEY=[
+  {k:"afford",label:"Money left over"},
+  {k:"taxes", label:"Taxes, net of services",hint:"what you pay, less what you\u2019d buy privately"},
+  {k:"hazard",label:"Disaster risk",hint:"today and projected to 2050"},
+  {k:"air",   label:"Air quality"}
+];
+const FACTORS=[...PLACE,...COMM,...MONEY];
+
+/* ---------- phase of life ----------
+   A starting point, not a cage. Each phase moves the defaults where most
+   people in it actually land, and "retired" also switches the money model. */
+const PHASES={
+  early:  {w:{climate:3,space:2,coast:2,forest:2,mtn:2,city:5,walk:4,schools:0,health:2,crime:3,politics:3,afford:4,taxes:3,hazard:2,air:2}},
+  nokids: {w:{climate:5,space:3,coast:3,forest:3,mtn:3,city:4,walk:3,schools:0,health:3,crime:3,politics:3,afford:3,taxes:4,hazard:3,air:3}},
+  kids:   {w:{climate:3,space:4,coast:2,forest:3,mtn:2,city:3,walk:2,schools:5,health:3,crime:4,politics:3,afford:4,taxes:3,hazard:3,air:3}},
+  empty:  {w:{climate:4,space:3,coast:3,forest:4,mtn:3,city:3,walk:3,schools:0,health:3,crime:3,politics:3,afford:3,taxes:3,hazard:3,air:2}},
+  retired:{w:{climate:4,space:3,coast:3,forest:3,mtn:2,city:3,walk:3,schools:0,health:5,crime:4,politics:3,afford:3,taxes:4,hazard:3,air:3}}
+};
+
+const state={
+  phase:"kids", weights:{...PHASES.kids.w},
+  sumTarget:80, winTarget:30,
+  politics:0, polscope:"both",
+  income:140000, ss:48000, wd:62000,
+  adults:2, kids:1, dogs:1, cats:0,
+  tenure:"own", portable:"remote",
+  ring:-1, allrings:false,
+  maxhome:0, minlot:0, maxcommute:0, region:"all",
+  open:null
+};
+
+/* ---------- tax ---------- */
+const BR={joint:{sd:30000,b:[[23850,.10],[96950,.12],[206700,.22],[394600,.24],[501050,.32],[751600,.35],[Infinity,.37]]},
+          single:{sd:15000,b:[[11925,.10],[48475,.12],[103350,.22],[197300,.24],[250525,.32],[626350,.35],[Infinity,.37]]}};
+/* Memoised. With portable income the taxable base is identical in all 3,144
+   places, so this ran the bracket walk three thousand times to get the same
+   answer. Keyed on the inputs, cleared never — the space is tiny. */
+const _fedCache=new Map();
+function federalTax(inc,people){
+  const k=Math.round(inc)+"|"+people;
+  const hit=_fedCache.get(k);
+  if(hit!==undefined) return hit;
+  const v=_federalTax(inc,people);
+  _fedCache.set(k,v);
+  return v;
+}
+function _federalTax(inc,people){
+  const t=people>=2?BR.joint:BR.single;
+  let taxable=Math.max(0,inc-t.sd),tax=0,prev=0;
+  for(const [c,rate] of t.b){ if(taxable<=prev)break; tax+=(Math.min(taxable,c)-prev)*rate; prev=c; }
+  return tax;
+}
+/* retireCode: 0 no state income tax · 1 exempts Social Security and most
+   retirement income · 2 exempts Social Security only · 3 still taxes part
+   of Social Security */
+const RETIRE_NOTE=["No state income tax at all",
+                   "Exempts Social Security and most retirement income",
+                   "Exempts Social Security, taxes withdrawals",
+                   "Taxes withdrawals and part of Social Security"];
+
+/* What the state hands back.
+   Treating tax as pure cost is the standard mistake: a low-tax state that
+   makes you buy pre-K, community college and a second car privately can cost
+   a household more than a high-tax state that supplies them. Every line here
+   is money this household would otherwise spend, not a general public good. */
+function publicValue(L,s,gross){
+  const a=L.a, v={};
+  /* roughly two of eighteen childhood years fall in the pre-K window */
+  v.prek   = s.kids*(2/18)*11500*(a.preK/100);
+  /* four years of in-state public tuition, net of state grant aid,
+     against the national average, spread across the childhood years */
+  v.college= s.kids*Math.max(-6000,(11200-(a.tuition-a.grantAid)))*4/18;
+  /* coverage support falls away as income rises */
+  const need=Math.max(0,Math.min(1,(125000-gross)/95000));
+  v.health = a.medicaid*3200*s.adults*need;
+  /* transit good enough to run one car instead of two. Capped at a single
+     vehicle: the model already charges driving separately, and crediting two
+     cars while charging for petrol counts the same money twice. */
+  v.transit= s.adults>1 ? Math.max(0,Math.min(1,(L.v.walk-58)/38))*10500 : 0;
+  v.leave  = s.phase==="kids" ? a.leave*1800 : 0;
+  v.senior = s.phase==="retired" ? a.seniorBreak/100*2600 : 0;
+  v.total  = v.prek+v.college+v.health+v.transit+v.leave+v.senior;
+  return v;
+}
+
+function economics(L,s){
+  const a=L.a, retired=s.phase==="retired";
+  const people=s.adults+s.kids;
+  const wageIndex=(retired||s.portable==="remote")?1:(0.35+0.65*(a.rpp/100));
+
+  let gross,fedBase,stateBase;
+  if(retired){
+    gross=s.ss+s.wd;
+    fedBase=s.wd+s.ss*0.85;
+    stateBase = a.retireCode===0||a.retireCode===1 ? 0
+              : a.retireCode===2 ? s.wd
+              : s.wd+s.ss*0.5;
+  } else {
+    gross=s.income*wageIndex;
+    fedBase=gross; stateBase=gross;
+  }
+
+  const fedGross=federalTax(fedBase,s.adults);
+  const childCredit=retired?0:Math.min(fedGross,s.kids*2000);
+  const fed=fedGross-childCredit;
+  const stateInc=stateBase*a.stateTax/100;
+  const price=L.homeK*1000;
+
+  let housing,propTax=0,insurance=0;
+  if(s.tenure==="own"){
+    propTax=price*a.propTax/100;
+    insurance=price*L.insRate;
+    housing=price*0.8*0.0063207*12+propTax+insurance+price*0.01;
+  } else {
+    /* renters pay it too, just folded into the rent */
+    insurance=price*L.insRate*0.25;
+    housing=L.rent*12*(people<=2?0.85:people<=4?1:1.2);
+  }
+
+  /* OECD-modified equivalence: the second adult and each child cost real
+     money, but not a whole extra adult's worth */
+  const equiv=1+0.7*Math.max(0,s.adults-1)+0.5*s.kids;
+  const baseLiving=17000*equiv*(a.rpp/100);
+
+  /* Veterinary and pet costs track local price levels and run higher in
+     dense areas, where practice overheads are higher */
+  const petIndex=(0.60+0.40*a.rpp/100)*L.b.vetM;
+  const pets=(s.dogs*1700+s.cats*950)*petIndex;
+
+  const driving=(L.commute/10)*900*Math.min(2,s.adults);
+  const salesTax=(baseLiving+pets)*0.60*a.salesTax/100;
+  const living=baseLiving+pets+driving+salesTax;
+
+  const stateLocalTax=stateInc+propTax+salesTax;
+  const pub=publicValue(L,s,gross);
+  const netGov=stateLocalTax-pub.total;
+  const net=gross-fed-stateInc;
+  return {retired,people,wageIndex,gross,fedGross,childCredit,fed,stateInc,propTax,insurance,salesTax,
+          stateLocalTax,pub,netGov,housing,driving,baseLiving,pets,petIndex,living,net,
+          leftover:net-housing-living+pub.total};
+}
+
+/* ---------- climate ---------- */
+function climateRaw(L,s){
+  /* Matched to the actual numbers the user set, because "warm" is not a
+     unit. One person's hot summer is another's mild one. */
+  const dSummer=Math.abs(L.sumHigh-s.sumTarget);
+  const dWinter=Math.abs(L.winLow-s.winTarget);
+  return -(dSummer*1.0+dWinter*0.75)+L.a.sun*0.08-Math.max(0,L.a.precip-55)*0.10;
+}
+
+/* ---------- political fit ----------
+   Symmetric by construction. The scale is a descriptive position, not a
+   ranking: a preference of -2 scores a solidly conservative state exactly
+   as well as +2 scores a solidly progressive one. Neither end is "better",
+   and choosing "mixed" makes the whole factor inert rather than centrist. */
+function politicsFit(L,s){
+  const target=50+s.politics*22;
+  const dState=Math.abs(L.a.stateLean-target);
+  const dLocal=Math.abs(L.localLean-target);
+  const w=s.polscope==="state"?[1,0]:s.polscope==="local"?[0,1]:[0.5,0.5];
+  return cap(100-(dState*w[0]+dLocal*w[1])*1.05);
+}
+const polParts=(L,s)=>({
+  state:cap(100-Math.abs(L.a.stateLean-(50+s.politics*22))*1.05),
+  local:cap(100-Math.abs(L.localLean-(50+s.politics*22))*1.05)
+});
+
+/* ---------- percentile ---------- */
+function percentiles(vals){
+  /* Was a linear scan per element, which is O(n²). Invisible at 300 places
+     and 107 ms per render at 3,144 — enough to make a slider feel broken.
+     Sort once, walk the ties, scatter back. Same numbers, 5x faster. */
+  const idx=vals.map((v,i)=>[v,i]).sort((a,b)=>a[0]-b[0]);
+  const out=new Array(vals.length);
+  let i=0;
+  while(i<idx.length){
+    let j=i;
+    while(j+1<idx.length && idx[j+1][0]===idx[i][0]) j++;
+    const pct=((i+j+1)/2)/idx.length*100;
+    for(let k=i;k<=j;k++) out[idx[k][1]]=pct;
+    i=j+1;
+  }
+  return out;
+}
+
+/* Eleven of the fifteen factors do not depend on anything the user sets, so
+   their percentiles are computed once rather than on every keystroke. Only
+   climate, politics, money and tax move when a control moves. */
+const STATIC_FACTORS=["space","coast","forest","mtn","city","walk","schools","health","crime","hazard","air"];
+let STATIC_PCT=null;
+
+function computeStatic(){
+  const raw={
+    space:  LOCALES.map(L=>L.v.space),
+    coast:  LOCALES.map(L=>L.v.coast),
+    forest: LOCALES.map(L=>L.v.forest),
+    mtn:    LOCALES.map(L=>L.v.mtn),
+    city:   LOCALES.map(L=>L.v.city),
+    walk:   LOCALES.map(L=>L.v.walk),
+    schools:LOCALES.map(L=>L.v.schools),
+    health: LOCALES.map(L=>L.v.health),
+    /* a suppressed crime figure must not read as "safest place in America",
+       so it sits at the median rather than at zero */
+    crime:  LOCALES.map(L=>L.crimeIdx==null?null:-L.crimeIdx),
+    hazard: LOCALES.map(L=>-(L.hazard*0.70+L.a.hazTrend*0.30)),
+    air:    LOCALES.map(L=>L.v.air)
+  };
+  STATIC_PCT={};
+  for(const k in raw){
+    const vals=raw[k];
+    const known=vals.filter(v=>v!=null);
+    const med=known.length?known.slice().sort((a,b)=>a-b)[Math.floor(known.length/2)]:0;
+    STATIC_PCT[k]=percentiles(vals.map(v=>v==null?med:v));
+  }
+}
+
+function scoreAll(s){
+  const econ=LOCALES.map(L=>economics(L,s));
+  const raw={
+    afford:  econ.map(e=>e.leftover),
+    taxes:   econ.map(e=>-(e.netGov/Math.max(1,e.gross))),
+    climate: LOCALES.map(L=>climateRaw(L,s)),
+    politics:LOCALES.map(L=>politicsFit(L,s))
+  };
+  const pct={...STATIC_PCT};
+  for(const k in raw) pct[k]=percentiles(raw[k]);
+
+  /* Six levels, non-linear. A flat scale can't express "this matters, but
+     that matters more" across 13 factors — everything piles into the middle.
+     The curve keeps the top level genuinely decisive instead of diluted. */
+  const W=[0,1,2,3.5,6,10], wt=f=>W[s.weights[f.k]];
+  const tw=FACTORS.reduce((n,f)=>n+wt(f),0)||1;
+
+  /* Weighted power mean, p<1, rather than a plain average.
+     A plain average rewards the absence of weakness over the presence of
+     strength, so the bland all-rounder wins every query and the ranking
+     stops responding to what you asked for. p=0.65 means a place cannot
+     fully buy its way out of being mediocre at something you called
+     decisive. Set p=1 to get the ordinary weighted average back. */
+  const P=0.65;
+  return LOCALES.map((L,i)=>{
+    const sc={}; FACTORS.forEach(f=>sc[f.k]=pct[f.k][i]);
+    const m=FACTORS.reduce((n,f)=>n+wt(f)*Math.pow(Math.max(1,sc[f.k]),P),0)/tw;
+    return {L,econ:econ[i],scores:sc,fit:Math.pow(m,1/P)};
+  });
+}
+
+/* ---------- language ---------- */
+function verdict(r,s){
+  const W=[0,1,2,3.5,6,10];
+  const on=FACTORS.filter(f=>s.weights[f.k]>0);
+  const strong=[...on].sort((a,b)=>(r.scores[b.k]*W[s.weights[b.k]])-(r.scores[a.k]*W[s.weights[a.k]])).slice(0,2);
+  const weak=on.filter(f=>r.scores[f.k]<35&&s.weights[f.k]>=3).sort((a,b)=>r.scores[a.k]-r.scores[b.k]).slice(0,2);
+  const nm=f=>f.label.toLowerCase();
+  let out=`Ranks here mainly on <b>${nm(strong[0])}</b>`;
+  if(strong[1]) out+=` and <b>${nm(strong[1])}</b>`;
+  out+=".";
+  out+= weak.length
+    ? ` The tradeoff you'd be accepting: <span class="neg">${weak.map(nm).join(" and ")}</span>${weak.length>1?" are both weak here.":" is weak here."}`
+    : " Nothing you said matters is badly served here.";
+  return out;
+}
+const weakChips=(r,s)=>FACTORS.filter(f=>s.weights[f.k]>=3&&r.scores[f.k]<32)
+  .sort((a,b)=>r.scores[a.k]-r.scores[b.k]).slice(0,2);
+
+/* ---------- signature ---------- */
+function signature(r,s){
+  const W=146,H=30,mid=H/2,n=FACTORS.length,bw=6,gap=(W-n*bw)/(n-1);
+  let bars="";
+  FACTORS.forEach((f,i)=>{
+    const v=r.scores[f.k],dev=(v-50)/50,h=Math.max(1.5,Math.abs(dev)*(mid-2));
+    const x=i*(bw+gap),y=dev>=0?mid-h:mid,off=s.weights[f.k]===0;
+    let c=dev>=0?"var(--primary)":"var(--neutral-bar)";
+    if(v<32&&s.weights[f.k]>=3)c="var(--deficit)";
+    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw}" height="${h.toFixed(1)}" rx="1.5" fill="${c}" opacity="${off?0.18:1}" style="animation-delay:${i*18}ms"><title>${f.label}: ${Math.round(v)}</title></rect>`;
+  });
+  return `<svg class="sig" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Fit signature">
+    <line x1="0" y1="${mid}" x2="${W}" y2="${mid}" stroke="var(--outline-soft)" stroke-width="1"/>${bars}</svg>`;
+}
+
+/* ---------- render ---------- */
+const $=q=>document.querySelector(q);
+const money=n=>(n<0?"−$":"$")+Math.abs(Math.round(n)).toLocaleString("en-US");
+const acres=v=>v<1?`${v.toFixed(2)} acre`:`${v.toFixed(v<10?1:0)} acres`;
+const LEAN=v=>v>=78?"solidly progressive":v>=60?"leaning progressive":v>=41?"mixed":v>=23?"leaning conservative":"solidly conservative";
+
+function weightRows(list){
+  return list.map(f=>`
+    <div class="wrow">
+      <span class="wlabel">${f.label}${f.hint?`<em>${f.hint}</em>`:""}</span>
+      <div class="seg" role="group" aria-label="Importance of ${f.label}">
+        ${[0,1,2,3,4,5].map(v=>`<button data-f="${f.k}" data-v="${v}" aria-pressed="${state.weights[f.k]===v}">${v}</button>`).join("")}
+      </div>
+    </div>`).join("");
+}
+function buildWeights(){
+  $("#w-place").innerHTML=weightRows(PLACE);
+  $("#w-comm").innerHTML=weightRows(COMM);
+  $("#w-money").innerHTML=weightRows(MONEY);
+}
+function syncPhaseUI(){
+  const retired=state.phase==="retired";
+  $("#retired-fields").hidden=!retired;
+  $("#working-fields").hidden=retired;
+  $("#portable-field").style.display=retired?"none":"";
+  $("#household-hint").textContent=retired
+    ? "Retirement income is taxed very differently by state. This works out what each place actually leaves you."
+    : "Used to work out what's actually left over after every tax and housing.";
+}
+
+function render(){
+  if(render._reset){shown=PAGE;render._reset=false;}
+  let res=scoreAll(state).filter(r=>{
+    const L=r.L;
+    if(state.region!=="all"&&L.a.region!==state.region)return false;
+    if(state.ring>=0&&L.b.k!==state.ring)return false;
+    if(state.maxhome&&L.homeK*1000>state.maxhome)return false;
+    if(state.minlot&&L.lot<state.minlot)return false;
+    if(state.maxcommute&&L.commute>state.maxcommute)return false;
+    return true;
+  }).sort((a,b)=>b.fit-a.fit);
+
+  if(!state.allrings){
+    // Keyed on the anchor name, not a numeric id — the contract has no such
+    // id, and the old key silently deduped every place into one.
+    const seen=new Set();
+    res=res.filter(r=>{
+      // state included: there are two Portlands, and keying on name alone
+      // silently dropped one of them
+      const k=r.L.a.st+"|"+r.L.title.replace(/^(Small towns near |Rural, near )/,"")
+                                     .replace(/ (city core|inner suburbs|outer suburbs)$/,"");
+      return seen.has(k)?false:(seen.add(k),true);
+    });
+  }
+
+  const visible=res.slice(0,shown);
+  $("#rcount").textContent = res.length>visible.length
+    ? `showing ${visible.length} of ${res.length} that match`
+    : `${res.length} of ${LOCALES.length} places`;
+  const any=FACTORS.some(f=>state.weights[f.k]>0);
+  $("#headline").textContent=any?"Where should you choose to live?":"Rate at least one thing that matters.";
+
+  if(!res.length){
+    $("#rows").innerHTML=`<div class="empty"><b>Nothing clears those filters.</b>
+      Try loosening the lot minimum, the drive-time limit or the price ceiling — the ranking will come straight back.</div>`;
+    return;
+  }
+
+  $("#rows").innerHTML=visible.map((r,i)=>{
+    const L=r.L,lo=r.econ.leftover,chips=weakChips(r,state);
+    const budget=lo<0?`<span class="warn">${money(-lo)}/yr short</span>`:`${money(lo)}/yr left over`;
+    const sub=`${L.a.st} · ${acres(L.lot)} · ${L.commute} min to centre · ${budget}`
+      +(chips.length?` · <span class="warn">weak: ${chips.map(c=>c.label.toLowerCase()).join(", ")}</span>`:"");
+    return `<button class="row" data-id="${L.id}" aria-current="${state.open===L.id}" style="animation-delay:${Math.min(i*14,300)}ms">
+      <span class="rank ${i<3?"top":""}">${String(i+1).padStart(2,"0")}</span>
+      <span class="place"><span class="nm">${L.title}</span><span class="sub">${sub}</span></span>
+      ${signature(r,state)}
+      <span class="fit"><span class="n">${Math.round(r.fit)}</span>
+      <span class="bar"><i style="width:${Math.round(r.fit)}%"></i></span></span>
+    </button>`;
+  }).join("") + (res.length>visible.length
+    ? `<button class="row" id="more" style="grid-template-columns:1fr;justify-items:center;color:var(--primary);font-weight:500">
+         Show ${Math.min(PAGE,res.length-visible.length)} more</button>` : "");
+
+  const more=$("#more");
+  if(more) more.addEventListener("click",()=>{shown+=PAGE;render();});
+
+  if(state.open!=null){
+    const idx=res.findIndex(x=>x.L.id===state.open);
+    if(idx>=0) fillSheet(res[idx],idx+1,res.length); else closeSheet();
+  }
+}
+
+function fillSheet(r,rank,total){
+  const L=r.L,a=L.a,e=r.econ,s=state,p=polParts(L,s),petIdx=e.petIndex;
+
+  $("#sheet-name").textContent=L.title;
+  $("#sheet-sub").textContent=`${a.st} · rank ${rank} of ${total} · fit ${Math.round(r.fit)}`;
+
+  const rows=FACTORS.map(f=>{
+    const v=r.scores[f.k],w=s.weights[f.k],above=v>=50,half=Math.abs(v-50);
+    let c=above?"var(--primary)":"var(--neutral-bar)";
+    if(v<32&&w>=3)c="var(--deficit)";
+    return `<div class="frow ${w===0?"off":""}">
+      <span class="fl">${f.label}<em>${w===0?"not counted":"weight "+w}</em></span>
+      <span class="track"><i style="left:${above?50:50-half}%;width:${half}%;background:${c}"></i><u></u></span>
+      <span class="fv">${Math.round(v)}</span></div>`;
+  }).join("");
+
+  const taxRows = e.retired
+    ? `<div><span>Social Security</span><span>${money(s.ss)}</span></div>
+       <div><span>Pension and withdrawals</span><span>${money(s.wd)}</span></div>
+       <div><span>Federal income tax</span><span>−${money(e.fed)}</span></div>
+       <div><span>State income tax</span><span>−${money(e.stateInc)}</span></div>`
+    : `<div><span>Gross household income</span><span>${money(e.gross)}</span></div>
+       ${s.portable==="local"?`<div><span>Local wage adjustment</span><span>×${e.wageIndex.toFixed(2)}</span></div>`:""}
+       <div><span>Federal income tax</span><span>−${money(e.fedGross)}</span></div>
+       ${e.childCredit?`<div><span>Child tax credit, ${s.kids} ${s.kids===1?"child":"children"}</span><span>+${money(e.childCredit)}</span></div>`:""}
+       <div><span>State income tax</span><span>−${money(e.stateInc)}</span></div>`;
+
+  $("#sheet-bd").innerHTML=`
+    <div class="card"><p class="verdict">${verdict(r,s)}</p></div>
+
+    <div class="card">
+      <span class="label">${e.leftover<0?"Estimated annual shortfall":"Estimated annual money left over"}</span>
+      <div class="big" style="${e.leftover<0?"color:var(--deficit)":""}">${money(e.leftover)}</div>
+      <p class="cap">${e.leftover<0
+        ? "On this income this place doesn't clear its own costs — you'd be short each year before saving anything."
+        : `After every tax, ${s.tenure==="own"?"mortgage, property tax, insurance and upkeep":"rent"}, driving, and typical costs for ${e.people} ${e.people===1?"person":"people"}${s.dogs+s.cats?" and "+(s.dogs+s.cats)+" "+((s.dogs+s.cats)===1?"pet":"pets"):""} at local prices.`}</p>
+      <div class="ledger">
+        ${taxRows}
+        <div><span>${s.tenure==="own"?"Housing, all in":"Rent"}</span><span>−${money(e.housing)}</span></div>
+        <div style="padding-left:12px;color:var(--on-dim)"><span>of which home insurance, at ${(L.insRate*100).toFixed(2)}%</span><span>${money(e.insurance)}</span></div>
+        <div><span>Driving, ${L.commute} min each way</span><span>−${money(e.driving)}</span></div>
+        ${s.dogs+s.cats?`<div><span>${s.dogs?s.dogs+(s.dogs>1?" dogs":" dog"):""}${s.dogs&&s.cats?", ":""}${s.cats?s.cats+(s.cats>1?" cats":" cat"):""} — vet, food, care</span><span>−${money(e.pets)}</span></div>`:""}
+        <div><span>Sales tax at ${a.salesTax.toFixed(1)}%</span><span>−${money(e.salesTax)}</span></div>
+        <div><span>Everything else</span><span>−${money(e.baseLiving)}</span></div>
+        ${Math.abs(e.pub.total)>200?`<div style="color:${e.pub.total>0?"var(--primary)":"var(--on-var)"}"><span>Public services, net of what you'd buy privately</span><span>${e.pub.total>0?"+":""}${money(e.pub.total)}</span></div>`:""}
+        <div class="tot"><span>${e.leftover<0?"Shortfall":"Left over"}</span><span>${money(e.leftover)}</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="label">What government actually costs you</span>
+      <div class="big" style="${e.netGov<0?"color:var(--primary)":""}">${money(e.netGov)}</div>
+      <p class="cap">${e.netGov<0
+        ? `This household gets back more than it pays in. A headline tax rate would have told you the opposite.`
+        : `Net of services, or ${(e.netGov/Math.max(1,e.gross)*100).toFixed(1)}% of gross income. Comparing tax rates alone would have shown ${(e.stateLocalTax/Math.max(1,e.gross)*100).toFixed(1)}%.`}</p>
+      <div class="ledger">
+        <div><span>State income tax</span><span>−${money(e.stateInc)}</span></div>
+        <div><span>Property tax at ${a.propTax.toFixed(2)}%</span><span>−${money(e.propTax)}</span></div>
+        <div><span>Sales tax at ${a.salesTax.toFixed(1)}%</span><span>−${money(e.salesTax)}</span></div>
+        ${e.pub.prek>100?`<div style="color:var(--primary)"><span>Public pre-K, ${a.preK}% of 4-year-olds served</span><span>+${money(e.pub.prek)}</span></div>`:""}
+        ${Math.abs(e.pub.college)>100?`<div style="color:${e.pub.college>0?"var(--primary)":"var(--on-var)"}"><span>In-state tuition vs national, ${money(a.tuition-a.grantAid)}/yr net</span><span>${e.pub.college>0?"+":"−"}${money(Math.abs(e.pub.college))}</span></div>`:""}
+        ${e.pub.health>100?`<div style="color:var(--primary)"><span>Medicaid expansion and exchange support</span><span>+${money(e.pub.health)}</span></div>`:""}
+        ${e.pub.transit>100?`<div style="color:var(--primary)"><span>Transit good enough to drop a car</span><span>+${money(e.pub.transit)}</span></div>`:""}
+        ${e.pub.leave>100?`<div style="color:var(--primary)"><span>State paid family leave</span><span>+${money(e.pub.leave)}</span></div>`:""}
+        ${e.pub.senior>100?`<div style="color:var(--primary)"><span>Senior property tax relief</span><span>+${money(e.pub.senior)}</span></div>`:""}
+        <div class="tot"><span>${e.netGov<0?"Net gain":"Net cost"}</span><span>${money(Math.abs(e.netGov))}</span></div>
+      </div>
+      <dl class="kv" style="margin-top:12px">
+        <dt>Retirement income</dt><dd style="font-size:11.5px">${RETIRE_NOTE[a.retireCode]}</dd>
+      </dl>
+      <p class="note">Only services this household would otherwise pay for privately are counted. Roads, parks and public safety are real but aren't a cheque you'd otherwise write, so they're left out rather than inflated into the total.</p>
+    </div>
+
+    <div class="card">
+      <span class="label">Disaster risk, and what it costs</span>
+      <div class="big">${L.hazard}<span style="font-size:14px;color:var(--on-dim)"> / 100 today</span></div>
+      <p class="cap">Projected to reach roughly <b style="color:var(--on)">${Math.round(L.hazard*0.7+a.hazTrend*0.3)}</b> by 2050. Home insurance here runs <b style="color:var(--on)">${(L.insRate*100).toFixed(2)}%</b> of value a year — ${money(e.insurance)} on this home. Climate risk reaches most households as an insurance bill long before it reaches them as a disaster.</p>
+      <div style="margin-top:14px">
+        ${[["Wildfire",L.v.wildfire],["Flooding",L.v.flood],["Hurricane and wind",L.v.wind],["Earthquake",L.v.quake],["Extreme heat",Math.round(L.heatRisk)]]
+          .map(([n,v])=>`<div class="frow" style="grid-template-columns:112px 1fr 34px">
+            <span class="fl">${n}</span>
+            <span class="track"><i style="left:0;width:${Math.round(v)}%;background:${v>=60?"var(--deficit)":"var(--primary)"}"></i></span>
+            <span class="fv">${Math.round(v)}</span></div>`).join("")}
+      </div>
+      <p class="note">${L.b.k>=3?"Wildfire exposure is higher this far out — the wildland-urban interface is where houses actually burn.":L.b.k<=1?"Wildfire exposure is lower in built-up areas, but extreme heat is higher.":"Mid-ring exposure."}</p>
+    </div>
+
+    <div class="card">
+      <span class="label">Safety from crime</span>
+      <dl class="kv" style="margin-top:10px">
+        <dt>Violent crime, per 100,000</dt><dd>${L.v.violent}${L.v.violent>420?" · above U.S.":L.v.violent<300?" · below U.S.":""}</dd>
+        <dt>Property crime, per 100,000</dt><dd>${L.v.property}${L.v.property>2200?" · above U.S.":L.v.property<1600?" · below U.S.":""}</dd>
+      </dl>
+      <p class="note">Crime falls steeply from the core outward, then flattens; rural rates are not uniformly the lowest. Reported offences only, and reporting coverage varies by agency.</p>
+    </div>
+
+    <div class="card">
+      <span class="label">Political and social reading</span>
+      <dl class="kv" style="margin-top:10px">
+        <dt>State policy environment</dt><dd>${LEAN(a.stateLean)}</dd>
+        <dt>This ring, locally</dt><dd>${LEAN(L.localLean)}</dd>
+        <dt>Match to what you chose — state</dt><dd>${Math.round(p.state)}</dd>
+        <dt>Match to what you chose — local</dt><dd>${Math.round(p.local)}</dd>
+      </dl>
+      <p class="note">${Math.abs(a.stateLean-L.localLean)>22
+        ? "The state and this ring pull in noticeably different directions. Worth knowing which of the two you actually care about."
+        : "State and local readings broadly agree here."} Descriptive measures of enacted law and recorded voting, not a judgement.</p>
+    </div>
+
+    <div class="card">
+      <span class="label">What this ring actually looks like</span>
+      <dl class="kv" style="margin-top:10px">
+        <dt>Typical home value</dt><dd>${money(L.homeK*1000)}</dd>
+        <dt>Typical home size</dt><dd>${L.sqft.toLocaleString()} sq ft</dd>
+        <dt>Typical lot</dt><dd>${acres(L.lot)}</dd>
+        <dt>Drive to the city centre</dt><dd>${L.commute} min</dd>
+        <dt>Summer daytime high</dt><dd>${L.sumHigh}°F</dd>
+        <dt>Winter nighttime low</dt><dd>${L.winLow}°F</dd>
+        <dt>Typical 2-bed rent</dt><dd>${money(L.rent)}/mo</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <span class="label">How it scores, factor by factor</span>
+      <div style="margin-top:12px">${rows}</div>
+      <p class="note">Each bar is this place's percentile against the other ${LOCALES.length-1}. The centre line is the median.</p>
+    </div>
+
+    ${L.caveats && L.caveats.length ? `<div class="card">
+      <span class="label">What this record does not know</span>
+      <ul style="margin:10px 0 0;padding-left:18px;font-size:12.5px;color:var(--on-var);line-height:1.6">
+        ${L.caveats.map(c=>`<li>${c}</li>`).join("")}
+      </ul>
+      <p class="note">Carried through from the pipeline. A modelled value and a measured one are not the same thing, so the record says which is which.</p>
+    </div>` : ""}
+
+    <div class="card">
+      <span class="label">The anchor city</span>
+      <dl class="kv" style="margin-top:10px">
+        <dt>Metro population</dt><dd>${a.popK>=1000?(a.popK/1000).toFixed(1)+"M":a.popK+"k"}</dd>
+        <dt>Cost of living vs U.S.</dt><dd>${a.rpp}</dd>
+        <dt>Annual precipitation</dt><dd>${a.precip}"</dd>
+        <dt>Sunshine</dt><dd>${a.sun}%</dd>
+        <dt>Veterinary cost index</dt><dd>${Math.round(petIdx*100)} vs U.S. 100</dd>
+      </dl>
+      <p class="note">Seed values. Tax figures are estimates for comparing places, not a filing calculation.</p>
+    </div>`;
+}
+
+/* ---------- open / close ---------- */
+let lastFocus=null;
+function openSheet(id){  // id is a FIPS string, never coerce it
+  lastFocus=document.activeElement; state.open=id; render();
+  $("#sheet").classList.add("on"); $("#scrim").classList.add("on"); $("#sheet").focus();
+}
+function closeSheet(){
+  state.open=null;
+  $("#sheet").classList.remove("on"); $("#scrim").classList.remove("on");
+  render(); if(lastFocus&&lastFocus.isConnected)lastFocus.focus();
+}
+
+/* ---------- boot ---------- */
+function showState(title, body){
+  $("#rows").innerHTML=`<div class="empty"><b>${title}</b>${body}</div>`;
+  $("#rcount").textContent="";
+}
+
+async function boot(){
+  showState("Loading places…", "Fetching the current dataset.");
+  try{
+    await loadData();
+  }catch(err){
+    showState("The dataset didn't load.",
+      `${err.message}<br><br>Nothing here is guessed when the data is missing — `+
+      `the page would rather show you this than a ranking built on nothing. `+
+      `If you are running locally, serve the folder over http rather than opening the file directly.`);
+    return;
+  }
+  if(!LOCALES.length){
+    showState("The dataset is empty.", "The pipeline ran but published no places.");
+    return;
+  }
+  computeStatic();
+  const when=DATA_META.built_at ? new Date(DATA_META.built_at).toLocaleDateString(
+    undefined,{year:"numeric",month:"short",day:"numeric"}) : "unknown";
+  $("#vintage").textContent=`${DATA_META.count.toLocaleString()} places · built ${when}`;
+  const seedy=(DATA_META.warnings||[]).some(w=>/seed/i.test(w.message||""));
+  if(!seedy) document.querySelector(".notice").remove();
+  render();
+}
+
+/* ---------- wiring ---------- */
+buildWeights(); syncPhaseUI();
+
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-f]"); if(!b)return;
+  state.weights[b.dataset.f]=+b.dataset.v;
+  b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  render();
+});
+function pillGroup(sel,key,num,after){
+  $(sel).addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b)return;
+    state[key]=num?+b.dataset.v:b.dataset.v;
+    b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    if(after)after(); render();
+  });
+}
+pillGroup("#phase","phase",false,()=>{
+  state.weights={...PHASES[state.phase].w};
+  if(["retired","empty","nokids"].includes(state.phase)){ state.kids=0; $("#kids").value=0; }
+  if(state.phase==="early"&&state.kids===0){ state.adults=1; $("#adults").value=1; }
+  buildWeights(); syncPhaseUI();
+});
+pillGroup("#ring","ring",true);
+pillGroup("#politics","politics",true);
+pillGroup("#polscope","polscope");
+pillGroup("#portable","portable");
+
+$("#reset").addEventListener("click",()=>{state.weights={...PHASES[state.phase].w};buildWeights();render();});
+$("#allrings").addEventListener("change",e=>{state.allrings=e.target.checked;render();});
+
+/* Typing in a number field fires per character. Coalescing to one frame keeps
+   the ranking responsive without recomputing it four times for "1400". */
+let raf=null;
+const schedule=()=>{ if(raf)cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>{raf=null;render();}); };
+const num=(id,key,lo,hi)=>$(id).addEventListener("input",e=>{
+  const v=e.target.value===""?lo:+e.target.value;
+  state[key]=Math.min(hi,Math.max(lo,isNaN(v)?lo:v)); schedule();
+});
+num("#income","income",0,1e9); num("#ss","ss",0,1e9); num("#wd","wd",0,1e9);
+num("#adults","adults",1,6); num("#kids","kids",0,8);
+num("#dogs","dogs",0,8);     num("#cats","cats",0,8);
+
+/* Temperature targets, in the units people actually think in */
+const tempSlider=(id,key,out)=>$(id).addEventListener("input",e=>{
+  state[key]=+e.target.value; $(out).textContent=state[key]+"°F"; render();
+});
+tempSlider("#sumTarget","sumTarget","#sumOut");
+tempSlider("#winTarget","winTarget","#winOut");
+
+/* Price ceiling: fine steps where most decisions live, coarse above,
+   and a final position that genuinely means no limit */
+const PRICE=[150,200,250,300,350,400,450,500,550,600,700,800,900,1000,1200,1400,1600,1800,2100,2500,3000,0];
+$("#maxhome").addEventListener("input",e=>{
+  const k=PRICE[+e.target.value];
+  state.maxhome=k?k*1000:0;
+  $("#maxhomeOut").textContent = k ? (k>=1000?"$"+(k/1000).toFixed(k%1000?1:0)+"m":"$"+k+"k") : "No limit";
+  render();
+});
+
+["tenure","minlot","maxcommute","region"].forEach(k=>
+  $("#"+k).addEventListener("change",e=>{
+    state[k]=isNaN(+e.target.value)?e.target.value:+e.target.value; render();
+  }));
+
+$("#rows").addEventListener("click",e=>{const r=e.target.closest(".row");if(r)openSheet(r.dataset.id);});
+$("#close").addEventListener("click",closeSheet);
+$("#scrim").addEventListener("click",closeSheet);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&state.open!=null)closeSheet();});
+
+boot();
+</script>
+</body>
+</html>

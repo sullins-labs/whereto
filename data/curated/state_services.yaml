@@ -1,0 +1,57 @@
+# What a state hands back. Only services a household would otherwise buy
+# privately are listed — roads, parks and public safety are real and valuable
+# but are not an avoided invoice, and counting them would let this file be
+# tuned to any conclusion.
+meta:
+  as_of: 2026-01-01
+  sources:
+    - "NIEER, The State of Preschool yearbook"
+    - "IPEDS, in-state tuition and fees, public four-year"
+    - "NASSGAP, survey of state-funded student financial aid"
+    - "KFF, status of state Medicaid expansion decisions"
+    - "State statutes, paid family and medical leave programmes"
+    - "Lincoln Institute, significant features of the property tax"
+
+states:
+  PA:
+    prek_coverage_pct: 20
+    tuition_instate: 17000
+    grant_aid_per_student: 1400
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief: 65
+  NY:
+    prek_coverage_pct: 55
+    tuition_instate: 9000
+    grant_aid_per_student: 1100
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief: 60
+  TN:
+    prek_coverage_pct: 25
+    tuition_instate: 11600
+    grant_aid_per_student: 1400
+    medicaid_expansion: false
+    paid_family_leave: false
+    senior_property_relief: 40
+  CA:
+    prek_coverage_pct: 35
+    tuition_instate: 11000
+    grant_aid_per_student: 2400
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief: 45
+  WA:
+    prek_coverage_pct: 15
+    tuition_instate: 12600
+    grant_aid_per_student: 1300
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief: 55
+  FL:
+    prek_coverage_pct: 75
+    tuition_instate: 6400
+    grant_aid_per_student: 1000
+    medicaid_expansion: false
+    paid_family_leave: false
+    senior_property_relief: 55
