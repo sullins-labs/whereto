@@ -1,0 +1,71 @@
+# State tax treatment. This is statute, not data — nobody publishes a
+# machine-readable feed of "does this state tax Social Security", so it is
+# maintained by hand, reviewed annually, and versioned like code.
+#
+# Every field carries an as_of date and a source. A value without both is a
+# guess wearing a number's clothing, and validate.py rejects it.
+#
+# retire_code:
+#   0  no state income tax at all
+#   1  exempts Social Security and most other retirement income
+#   2  exempts Social Security, taxes withdrawals and pensions
+#   3  taxes withdrawals and part of Social Security
+meta:
+  as_of: 2026-01-01
+  reviewed_by: manual
+  sources:
+    - "State departments of revenue, tax year 2025 schedules"
+    - "Tax Foundation, State and Local Sales Tax Rates, midyear 2025"
+    - "NCSL, State Tax Treatment of Retirement Income"
+    - "Census Bureau, Annual Survey of State and Local Government Finances"
+
+states:
+  PA:
+    income_top_rate: 3.07
+    income_flat: true
+    sales_combined: 6.34
+    property_effective: 1.49
+    retire_code: 1
+    note: >-
+      Flat income tax but retirement income is fully exempt, which makes
+      Pennsylvania cheap for retirees and unremarkable for workers. A model
+      that looks only at the headline rate gets this exactly backwards.
+  TN:
+    income_top_rate: 0.0
+    income_flat: false
+    sales_combined: 9.55
+    property_effective: 0.55
+    retire_code: 0
+    note: >-
+      No income tax, but the highest combined sales tax in the country. The
+      burden is shifted, not removed, and it lands hardest on households that
+      spend most of what they earn.
+  CA:
+    income_top_rate: 13.3
+    income_flat: false
+    sales_combined: 8.85
+    property_effective: 0.71
+    retire_code: 2
+    note: >-
+      Proposition 13 caps assessment growth, so the effective property rate is
+      low and long-tenured owners pay far less than recent buyers. A single
+      state-level rate overstates the cost for the former and understates it
+      for the latter.
+  WA:
+    income_top_rate: 0.0
+    income_flat: false
+    sales_combined: 9.38
+    property_effective: 0.87
+    retire_code: 0
+  NY:
+    income_top_rate: 10.9
+    income_flat: false
+    sales_combined: 8.53
+    property_effective: 1.54
+    retire_code: 2
+  FL:
+    income_top_rate: 0.0
+    income_flat: false
+    sales_combined: 7.00
+    property_effective: 0.79
+    retire_code: 0
