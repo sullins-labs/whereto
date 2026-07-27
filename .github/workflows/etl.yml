@@ -1,0 +1,74 @@
+name: Refresh data
+
+# Free on public repositories. Keep this repo public and the pipeline costs
+# nothing to run — that is not a happy accident, it is the reason the whole
+# thing is built as a batch job that emits static files.
+on:
+  schedule:
+    - cron: "0 9 1 * *"        # monthly, the cadence of the fastest source
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90   # cold build is ~70 min; routine runs are ~7
+    steps:
+      - uses: actions/checkout@v4
+        with: { lfs: false }
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # Restore the raw archive so a run does not re-fetch what it already has.
+      - name: Restore source archive
+        uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: raw-archive-${{ github.run_id }}
+          restore-keys: raw-archive-
+
+      - name: Verify archive integrity
+        run: python -m etl.build --verify
+
+      - name: Build
+        env:
+          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+          BLS_API_KEY:    ${{ secrets.BLS_API_KEY }}
+          BEA_API_KEY:    ${{ secrets.BEA_API_KEY }}
+          HUD_API_TOKEN:  ${{ secrets.HUD_API_TOKEN }}
+          FBI_CDE_API_KEY: ${{ secrets.FBI_CDE_API_KEY }}
+        run: python -m etl.build
+
+      - name: Run tests
+        run: |
+          python tests/test_spine.py
+          python tests/test_validate.py
+
+      # Snapshots go to a release rather than the repo. Release assets are
+      # free and effectively unlimited; committing a few hundred megabytes of
+      # federal zip files every month is how a repo becomes unusable.
+      - name: Archive snapshots to release
+        if: success()
+        run: |
+          TAG="snapshot-$(date +%Y-%m)"
+          tar czf snapshots.tar.gz data/raw
+          gh release create "$TAG" snapshots.tar.gz --notes "Source snapshots $(date +%Y-%m)" || \
+          gh release upload "$TAG" snapshots.tar.gz --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Commit refreshed data
+        if: success()
+        run: |
+          git config user.name  "etl"
+          git config user.email "etl@users.noreply.github.com"
+          git add data/dist/places.json
+          git diff --staged --quiet || git commit -m "data: refresh $(date +%Y-%m-%d)"
+          git push
