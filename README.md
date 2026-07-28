@@ -73,6 +73,8 @@ annually, versioned like code, with an `as_of` date and a named source on every
 file. A value without both is a guess wearing a number's clothing, and
 validation rejects it.
 
+Code is MIT. Data is not — see [DATA.md](DATA.md).
+
 ## Licences are enforced, not documented
 
 `config.py` marks each source `redistributable` or not. Zillow's research files
