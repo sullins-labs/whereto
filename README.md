@@ -1,6 +1,6 @@
 # whereto-etl
 
-The data pipeline behind [sullinslabs.com](https://sullinslabs.com) — a tool for
+The data pipeline behind [Wheretolive](https://sullinslabs.com/whereto/index.html), a tool for
 deciding where to live, built entirely on public data at zero marginal cost.
 
 ```bash
@@ -33,7 +33,7 @@ things that matter more:
 **The build refuses rather than guesses.** `validate.py` blocks publication on
 missing required fields, values outside plausibility envelopes, undersized
 datasets and absent rings. A stale number the site already had is safer than a
-wrong one it did not — so a blocked build leaves the previous data live.
+wrong one it did not, so a blocked build leaves the previous data live.
 
 **Sources are independent.** One failing degrades its fields and is reported;
 it does not abort the run. A pipeline that dies because one endpoint is having
@@ -47,10 +47,10 @@ small-area ZIP, FEMA is county and tract, NOAA is weather stations, Zillow uses
 proprietary region IDs, FBI is law-enforcement agencies. None of them join
 without a deliberate spine.
 
-- **Atom** — county, 5-digit FIPS. Every factor exists at this grain or can be
+- **Atom**: county, 5-digit FIPS. Every factor exists at this grain or can be
   honestly aggregated to it.
-- **Anchor** — CBSA. What the interface calls "near Raleigh".
-- **Ring** — 0 to 4, *derived, never invented*, from three published federal
+- **Anchor**: CBSA. What the interface calls "near Raleigh".
+- **Ring**: 0 to 4, *derived, never invented*, from three published federal
   classifications: the Census CBSA delineation Central/Outlying flag, USDA ERS
   Rural-Urban Continuum Codes, and measured density from the Census Gazetteer.
 
@@ -73,7 +73,7 @@ annually, versioned like code, with an `as_of` date and a named source on every
 file. A value without both is a guess wearing a number's clothing, and
 validation rejects it.
 
-Code is MIT. Data is not — see [DATA.md](DATA.md).
+Code is MIT. Data is not; see [DATA.md](DATA.md).
 
 ## Licences are enforced, not documented
 
@@ -90,19 +90,25 @@ somebody remembers.
 | CI and ETL compute | GitHub Actions | unlimited on **public** repos | ~20 min/month |
 | Snapshot archive | GitHub Releases | free, 2 GB per file | monthly tarball |
 | Built data | Git | free | ~3 MB JSON |
-| Hosting | Cloudflare Pages | no bandwidth cap on static | one page |
+| Hosting | Netlify | 100 GB/month bandwidth | one page inside sullinslabs.com |
 | Data APIs | Census, BLS, BEA, HUD, FEMA, NOAA, FBI | free with key | monthly batch |
 
-Total: **$0/month.** Not "cheap" — structurally incapable of billing. There is
+Total: **$0/month.** Not "cheap" but structurally incapable of billing. There is
 no server, no database and no serverless function anywhere in the stack, so
-there is no metered surface that a traffic spike can turn into an invoice.
+there is no per-request meter that a traffic spike can turn into an invoice.
 Scoring runs in the visitor's browser, which makes compute the visitor's cost
 and keeps their income and household off the network entirely.
 
-Two things would break it. Keep the repository **public** — Actions minutes are
-unlimited there and capped at 2,000/month on private. And the moment the site
-earns money, the non-commercial tiers stop applying; those sources sit behind
-swappable adapters for that reason.
+Bandwidth is the one allowance traffic can actually consume. Netlify's free
+tier includes 100 GB a month, and a cold visit costs roughly 3 MB once the
+real dataset lands, so it takes on the order of 30,000 visits a month to reach
+it. That is an allowance rather than a meter: the failure mode is being asked
+to upgrade, not an unexpected bill.
+
+Two things would break it. Keep the repository **public**, because Actions
+minutes are unlimited there and capped at 2,000/month on private. And the
+moment the site earns money, the non-commercial tiers stop applying; those
+sources sit behind swappable adapters for that reason.
 
 ## Keys
 
