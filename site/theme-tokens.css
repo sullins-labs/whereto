@@ -22,6 +22,7 @@
   --cobalt-500: #4D82F0;
   --cobalt-600: #2E5FD4;
   --cobalt-700: #1E419E;
+  --warning-500: #E8912A;
 
   /* dark is the default, same as the rest of the site */
   --sl-bg: var(--ink-950);
@@ -36,6 +37,18 @@
   --sl-primary: var(--cobalt-500);
   --sl-primary-strong: var(--cobalt-400);
   --sl-primary-container: rgba(77, 130, 240, 0.18);
+
+  /* Wheretolive carries six more colour names than the site's own theme
+     layer does. They are listed here because leaving any of them out
+     silently keeps its light-mode value in dark mode, which is how
+     --deficit came to render at 1.26:1 against a card. */
+  --sl-deficit: var(--warning-500);
+  --sl-neutral-bar: rgba(255, 255, 255, 0.32);
+  --sl-track: rgba(255, 255, 255, 0.12);
+  --sl-state: rgba(255, 255, 255, 0.07);
+  --sl-row-hover: var(--ink-800);
+  --sl-e1: 0 1px 2px rgba(0, 0, 0, .5), 0 1px 3px 1px rgba(0, 0, 0, .35);
+  --sl-e2: 0 1px 2px rgba(0, 0, 0, .55), 0 2px 8px 2px rgba(0, 0, 0, .45);
   color-scheme: dark;
 }
 
@@ -52,6 +65,16 @@
   --sl-primary: var(--cobalt-600);
   --sl-primary-strong: var(--cobalt-700);
   --sl-primary-container: #DAE8F8;
+
+  /* These six keep the values the app shipped with. Light mode was never
+     the broken one, so this block exists to hold it steady, not change it. */
+  --sl-deficit: #0A2C4D;
+  --sl-neutral-bar: #AFBDCB;
+  --sl-track: #E4EAF1;
+  --sl-state: rgba(22, 104, 196, .06);
+  --sl-row-hover: #FCFDFF;
+  --sl-e1: 0 1px 2px rgba(13, 32, 51, .05), 0 1px 3px 1px rgba(13, 32, 51, .04);
+  --sl-e2: 0 1px 2px rgba(13, 32, 51, .07), 0 2px 8px 2px rgba(13, 32, 51, .06);
   color-scheme: light;
 }
 
@@ -69,6 +92,12 @@
   --primary: var(--sl-primary);
   --primary-strong: var(--sl-primary-strong);
   --primary-container: var(--sl-primary-container);
+  --deficit: var(--sl-deficit);
+  --neutral-bar: var(--sl-neutral-bar);
+  --track: var(--sl-track);
+  --state: var(--sl-state);
+  --e1: var(--sl-e1);
+  --e2: var(--sl-e2);
 
   --f-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   --f-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
@@ -78,6 +107,14 @@
   --r-card: 8px;
   --r-pill: 999px;
   --r-sm: 4px;
+}
+
+/* The app hardcodes this one hover colour rather than reading a variable,
+   so in dark mode every row flashed near-white on hover. Same specificity
+   as the original rule and later in the cascade, which is enough to win
+   without editing index.html. */
+.row:hover {
+  background: var(--sl-row-hover);
 }
 
 body,
