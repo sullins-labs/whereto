@@ -44,26 +44,50 @@ Locally first because the cold build is the run most likely to surface a
 source that has moved, and watching it is faster than reading CI logs. After
 that, routine runs are about seven minutes and belong in Actions.
 
-## 4. Cloudflare Pages
+## 4. Hosting (superseded, read this before following anything below)
 
-Dashboard → Workers & Pages → Create → connect the GitHub repo.
+**This step no longer applies.** It described standing up a separate
+Cloudflare Pages deployment on the `sullinslabs.com` apex domain. That is not
+what happened.
 
-- Build command: *(none — the site is already static)*
-- Output directory: `site`
-- Custom domain: `sullinslabs.com`
+As of August 2026, `sullinslabs.com` is a single Astro site deployed on
+**Netlify**, and this app ships as static files inside it at
+**`/whereto/`**. Nameservers point at Netlify, not Cloudflare. There is no
+separate Cloudflare Pages project, and creating one on this domain would
+collide with the live site.
 
-Nameservers move to Cloudflare; DNS, TLS and CDN are free. **Do not add
-Workers, D1, KV or Functions.** Not because they cost much, but because they
-are the only components in the stack that meter per request. A purely static
-site has no code path that can generate an invoice, and that is a stronger
-guarantee than a low bill.
+Live URL: <https://sullinslabs.com/whereto/index.html>
+
+The zero-cost argument below still holds, and for the same reason: the site
+is purely static, so nothing in the stack meters per request. Netlify serves
+it on the free tier with no bandwidth cap on static assets.
+
+### How the app reaches production now
+
+`site/` is the source of what is served at `/whereto/`. The sullinslabs repo
+holds a deployed copy at `public/whereto/`. Keep these in sync deliberately:
+
+- `site/index.html` and `site/theme-tokens.css` are the presentation layer.
+  Both are written to be portable, so they work whether the app is served
+  from a domain root or from a subpath. `theme-tokens.css` is linked
+  relatively, and the back link is an absolute URL to `sullinslabs.com`.
+- `data/dist/places.json` is the build output this pipeline produces, and is
+  the file that actually needs to flow to the deployed copy after each run.
+
+Do not blind-copy `site/` over `public/whereto/` in either direction without
+diffing first.
 
 ## 5. Turn on the schedule
 
 `.github/workflows/etl.yml` runs on the first of each month and can be
 triggered by hand. It restores the archive from cache, verifies checksums,
 builds, runs the tests, pushes snapshots to a Release, and commits
-`data/dist/places.json`. Cloudflare redeploys on that commit.
+`data/dist/places.json`.
+
+Note that committing that file does **not** currently redeploy anything. The
+sullinslabs site is deployed manually with `netlify deploy --prod`, so a new
+`places.json` has to be copied into that repo and published there. Wiring
+this up automatically is an open task.
 
 ---
 
