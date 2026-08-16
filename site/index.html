@@ -1,13 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  (function () {
+    try {
+      var stored = localStorage.getItem('sl-theme');
+      document.documentElement.setAttribute('data-theme', stored === 'light' ? 'light' : 'dark');
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  })();
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Where To — finding your balance of city, space and cost</title>
 <meta name="description" content="The real question isn't which metro. It's how far out from one. Set what matters; see where the balance lands.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   /* surfaces — cool, low chroma */
@@ -72,6 +82,31 @@ button{cursor:pointer;background:none;border:none;padding:0}
 
 /* label style — sentence case, never uppercase */
 .label{display:block;font-size:11.5px;font-weight:500;color:var(--on-dim);letter-spacing:.01em}
+
+/* ---------------- back to Sullins Labs ---------------- */
+.sl-strip{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:9px 24px;
+  background:var(--surface-2);
+  border-bottom:1px solid var(--outline-soft);
+}
+.sl-back{
+  display:flex;align-items:center;gap:8px;
+  color:var(--on-var);
+  font-family:var(--f-sans);font-size:13px;font-weight:500;
+  text-decoration:none;
+}
+.sl-back:hover{color:var(--on)}
+.sl-theme-toggle{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;
+  border:1px solid var(--outline-soft);border-radius:var(--r-sm);
+  color:var(--on-var);
+}
+.sl-theme-toggle:hover{color:var(--on);background:var(--surface-3)}
+.sl-icon-moon{display:none}
+:root[data-theme='light'] .sl-icon-sun{display:none}
+:root[data-theme='light'] .sl-icon-moon{display:block}
 
 /* ---------------- masthead ---------------- */
 .masthead{
@@ -334,8 +369,18 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
   .rhead h1{font-size:20px}
 }
 </style>
+<link rel="stylesheet" href="theme-tokens.css">
 </head>
 <body>
+<div class="sl-strip">
+  <a href="https://sullinslabs.com/" class="sl-back">
+    <span aria-hidden="true">&larr;</span> Back to Sullins Labs
+  </a>
+  <button type="button" class="sl-theme-toggle" id="slThemeToggle" aria-label="Switch to light mode">
+    <svg class="sl-icon-sun" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    <svg class="sl-icon-moon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+  </button>
+</div>
 <header class="masthead">
   <div class="masthead-in">
     <p class="wordmark">Where<b>To</b></p>
@@ -1428,6 +1473,20 @@ $("#scrim").addEventListener("click",closeSheet);
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&state.open!=null)closeSheet();});
 
 boot();
+
+(function () {
+  const btn = document.getElementById("slThemeToggle");
+  function apply(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    btn.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
+  }
+  apply(document.documentElement.getAttribute("data-theme") || "dark");
+  btn.addEventListener("click", () => {
+    const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    apply(next);
+    try { localStorage.setItem("sl-theme", next); } catch (e) {}
+  });
+})();
 </script>
 </body>
 </html>

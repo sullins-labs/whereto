@@ -1,0 +1,99 @@
+/* Sullins Labs Design System tokens, applied to the Wheretolive app.
+   Loaded after Wheretolive's own <style> block so these values win the
+   cascade. Wheretolive's CSS rules keep referencing its own variable
+   names (--bg, --surface, --primary, etc.) unchanged; only what those
+   names resolve to changes here, mirroring src/styles/theme.css so
+   dark/light and the toggle behave the same as the rest of the site. */
+
+:root {
+  /* raw palette, from design-system/tokens/colors.css */
+  --ink-950: #060B18;
+  --ink-900: #0B1633;
+  --ink-800: #122148;
+  --ink-700: #1B2E5E;
+  --paper: #FFFFFF;
+  --gray-50: #F6F8FB;
+  --gray-100: #EEF1F6;
+  --gray-200: #DCE1EA;
+  --gray-300: #C2CAD8;
+  --gray-500: #6B7688;
+  --gray-700: #323C4E;
+  --cobalt-400: #6C97F4;
+  --cobalt-500: #4D82F0;
+  --cobalt-600: #2E5FD4;
+  --cobalt-700: #1E419E;
+
+  /* dark is the default, same as the rest of the site */
+  --sl-bg: var(--ink-950);
+  --sl-surface: var(--ink-900);
+  --sl-surface-2: var(--ink-800);
+  --sl-surface-3: var(--ink-700);
+  --sl-outline: rgba(255, 255, 255, 0.22);
+  --sl-outline-soft: rgba(255, 255, 255, 0.12);
+  --sl-on: #FFFFFF;
+  --sl-on-var: rgba(255, 255, 255, 0.66);
+  --sl-on-dim: rgba(255, 255, 255, 0.45);
+  --sl-primary: var(--cobalt-500);
+  --sl-primary-strong: var(--cobalt-400);
+  --sl-primary-container: rgba(77, 130, 240, 0.18);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --sl-bg: var(--gray-50);
+  --sl-surface: var(--paper);
+  --sl-surface-2: var(--gray-100);
+  --sl-surface-3: var(--gray-200);
+  --sl-outline: var(--gray-300);
+  --sl-outline-soft: var(--gray-200);
+  --sl-on: var(--ink-900);
+  --sl-on-var: var(--gray-700);
+  --sl-on-dim: var(--gray-500);
+  --sl-primary: var(--cobalt-600);
+  --sl-primary-strong: var(--cobalt-700);
+  --sl-primary-container: #DAE8F8;
+  color-scheme: light;
+}
+
+/* Remap onto Wheretolive's own variable names. */
+:root {
+  --bg: var(--sl-bg);
+  --surface: var(--sl-surface);
+  --surface-2: var(--sl-surface-2);
+  --surface-3: var(--sl-surface-3);
+  --outline: var(--sl-outline);
+  --outline-soft: var(--sl-outline-soft);
+  --on: var(--sl-on);
+  --on-var: var(--sl-on-var);
+  --on-dim: var(--sl-on-dim);
+  --primary: var(--sl-primary);
+  --primary-strong: var(--sl-primary-strong);
+  --primary-container: var(--sl-primary-container);
+
+  --f-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --f-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --r-card: 8px;
+  --r-pill: 999px;
+  --r-sm: 4px;
+}
+
+body,
+.card,
+.masthead,
+.panel,
+.sl-strip {
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  .card,
+  .masthead,
+  .panel,
+  .sl-strip {
+    transition: none;
+  }
+}
