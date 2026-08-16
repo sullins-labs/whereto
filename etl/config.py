@@ -53,7 +53,7 @@ def register(s: Source) -> Source:
 
 register(Source(
     key="census_gazetteer",
-    name="Census Gazetteer — counties",
+    name="Census Gazetteer: counties",
     url="https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer/2024_Gaz_counties_national.zip",
     cadence="annual", licence="Public domain", redistributable=True,
     notes="County FIPS, name, land area, internal point lat/lon. The spine.",
@@ -193,7 +193,7 @@ register(Source(
 
 register(Source(
     key="fbi_cde",
-    name="FBI Crime Data Explorer — agency offences",
+    name="FBI Crime Data Explorer: agency offences",
     url="https://api.usa.gov/crime/fbi/cde/estimate/state/{state}/{offense}",
     cadence="annual", licence="Public domain", redistributable=True,
     needs_key="FBI_CDE_API_KEY",
@@ -206,7 +206,7 @@ register(Source(
 
 register(Source(
     key="nces_ccd",
-    name="NCES Common Core of Data — district finance and enrolment",
+    name="NCES Common Core of Data: district finance and enrolment",
     url="https://nces.ed.gov/ccd/Data/zip/ccd_lea_finance.zip",
     cadence="annual", licence="Public domain", redistributable=True,
 ))
@@ -215,7 +215,7 @@ register(Source(
 
 register(Source(
     key="mit_election",
-    name="MIT Election Data and Science Lab — county presidential returns",
+    name="MIT Election Data and Science Lab: county presidential returns",
     url="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/VOQCHQ",
     cadence="per election", licence="CC BY-NC", redistributable=False,
     notes="Non-commercial. Used to derive a local lean index, not republished.",
