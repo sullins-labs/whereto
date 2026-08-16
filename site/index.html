@@ -13,14 +13,14 @@
 </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Where To — finding your balance of city, space and cost</title>
+<title>Where To: finding your balance of city, space and cost</title>
 <meta name="description" content="The real question isn't which metro. It's how far out from one. Set what matters; see where the balance lands.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* surfaces — cool, low chroma */
+  /* surfaces: cool, low chroma */
   --bg:#F4F7FA;
   --surface:#FFFFFF;
   --surface-2:#EBF0F6;
@@ -35,7 +35,7 @@
   --on-var:#465767;
   --on-dim:#78899A;
 
-  /* accent — a single blue, used at three strengths */
+  /* accent: a single blue, used at three strengths */
   --primary:#1668C4;
   --primary-strong:#0F4E99;
   --primary-container:#DAE8F8;
@@ -80,7 +80,7 @@ button{cursor:pointer;background:none;border:none;padding:0}
 :focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
 .mono{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
-/* label style — sentence case, never uppercase */
+/* label style: sentence case, never uppercase */
 .label{display:block;font-size:11.5px;font-weight:500;color:var(--on-dim);letter-spacing:.01em}
 
 /* ---------------- back to Sullins Labs ---------------- */
@@ -392,7 +392,7 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
 <div class="notice">
   <div class="notice-in">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.9" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4M8 4.6v.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-    <p style="margin:0"><b>Seed data — interface build.</b> Values are plausible placeholders shaped like the real pipeline output, so the instrument can be designed and tested. They are not sourced figures. The ETL that replaces them is specified at the bottom of the page.</p>
+    <p style="margin:0"><b>Seed data: interface build.</b> Values are plausible placeholders shaped like the real pipeline output, so the instrument can be designed and tested. They are not sourced figures. The ETL that replaces them is specified at the bottom of the page.</p>
   </div>
 </div>
 
@@ -448,7 +448,7 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
           <button data-v="local" aria-pressed="false">My neighbours</button>
           <button data-v="both" aria-pressed="true">Both</button>
         </div>
-        <p class="note">State law follows you into a rural county; local culture doesn't. Rings shift the local reading a long way — the same state can hold both.</p>
+        <p class="note">State law follows you into a rural county; local culture doesn't. Rings shift the local reading a long way; the same state can hold both.</p>
       </div>
     </div>
 
@@ -467,7 +467,7 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
 
     <div class="card">
       <h2>Your weather</h2>
-      <p class="hint">Set the actual temperatures you want, because "warm" isn't a unit — one person's hot summer is another's mild one.</p>
+      <p class="hint">Set the actual temperatures you want, because "warm" isn't a unit: one person's hot summer is another's mild one.</p>
       <div class="field">
         <div class="readout"><label for="sumTarget">Ideal summer daytime high</label><b id="sumOut">80°F</b></div>
         <input type="range" class="slider" id="sumTarget" min="62" max="105" step="1" value="80">
@@ -627,7 +627,7 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
 <div class="scrim" id="scrim"></div>
 <aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-name" tabindex="-1">
   <div class="sheet-hd">
-    <div><h2 id="sheet-name">—</h2><p id="sheet-sub">—</p></div>
+    <div><h2 id="sheet-name"></h2><p id="sheet-sub"></p></div>
     <button class="close" id="close" aria-label="Close details">
       <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
     </button>
@@ -674,7 +674,7 @@ let DATA_META = null;
    leanShift encodes the urban-rural political gradient, which is the most
    reliable spatial regularity in American politics. It is what lets one
    state hold both a solidly progressive core and a solidly conservative
-   fringe — and it is why "which state" is too blunt a question. */
+   fringe, and it is why "which state" is too blunt a question. */
 const BANDS=[
  {k:0,tag:"city core",     priceM:1.20,lot:0.08,sqft:1450,space:6, walkM:1.34,cityM:1.00,wildM:0.60,coastM:1.00,healthM:1.04,airM:0.94,schoolM:0.86,leanShift:14, vetM:1.12,crimeV:2.10,crimeP:1.85,fireM:0.55,floodM:1.05,sumShift:2.5,winShift:4.0,commute:10},
  {k:1,tag:"inner suburbs", priceM:1.06,lot:0.28,sqft:1950,space:28,walkM:0.96,cityM:0.95,wildM:0.80,coastM:0.96,healthM:1.01,airM:0.98,schoolM:1.06,leanShift:6,  vetM:1.05,crimeV:0.95,crimeP:1.05,fireM:0.75,floodM:1.00,sumShift:2.0,winShift:3.0,commute:22},
@@ -685,7 +685,7 @@ const BANDS=[
 const cap=v=>Math.max(0,Math.min(100,v));
 
 /* Adapter. The engine was written against a nested shape; the contract is
-   flat. Rather than rewrite the scoring code, the seam lives here — one
+   flat. Rather than rewrite the scoring code, the seam lives here: one
    function, easy to read, easy to delete when the contract carries every
    field directly. Anything the pipeline does not yet publish is derived from
    the ring and declared in `caveats`, so a modelled value never passes for a
@@ -765,7 +765,7 @@ function buildLocalesLegacy(){
       sqft: Math.round(b.sqft*(a.rpp>112?0.9:1)),
       commute:Math.round(b.commute*sizeF),
       localLean:Math.round(cap(a.metroLean+b.leanShift)),
-      /* urban heat island, strongest overnight — a city core runs several
+      /* urban heat island, strongest overnight: a city core runs several
          degrees warmer than the rural fringe of the same metro */
       sumHigh:Math.round((a.julHigh+b.sumShift)*10)/10,
       heatRisk:0,
@@ -780,7 +780,7 @@ function buildLocalesLegacy(){
         health:cap(a.health*b.healthM),
         schools:cap(a.schools*b.schoolM),
         air:cap(a.air*b.airM),
-        /* Wildfire rises sharply moving outward — the wildland-urban
+        /* Wildfire rises sharply moving outward: the wildland-urban
            interface is where houses actually burn, not the city core. */
         wildfire:cap(a.wildfire*b.fireM),
         flood:cap(a.flood*b.floodM),
@@ -809,7 +809,7 @@ async function loadData(){
   if(payload.contract_version !== CONTRACT_VERSION){
     throw new Error(
       `data is contract v${payload.contract_version}, this page expects v${CONTRACT_VERSION}. ` +
-      `One of the two is out of date — the pipeline writes the version it built.`);
+      `One of the two is out of date. The pipeline writes the version it built.`);
   }
   DATA_META = {
     built_at: payload.built_at,
@@ -873,7 +873,7 @@ const BR={joint:{sd:30000,b:[[23850,.10],[96950,.12],[206700,.22],[394600,.24],[
           single:{sd:15000,b:[[11925,.10],[48475,.12],[103350,.22],[197300,.24],[250525,.32],[626350,.35],[Infinity,.37]]}};
 /* Memoised. With portable income the taxable base is identical in all 3,144
    places, so this ran the bracket walk three thousand times to get the same
-   answer. Keyed on the inputs, cleared never — the space is tiny. */
+   answer. Keyed on the inputs, cleared never; the space is tiny. */
 const _fedCache=new Map();
 function federalTax(inc,people){
   const k=Math.round(inc)+"|"+people;
@@ -1008,7 +1008,7 @@ const polParts=(L,s)=>({
 /* ---------- percentile ---------- */
 function percentiles(vals){
   /* Was a linear scan per element, which is O(n²). Invisible at 300 places
-     and 107 ms per render at 3,144 — enough to make a slider feel broken.
+     and 107 ms per render at 3,144, enough to make a slider feel broken.
      Sort once, walk the ties, scatter back. Same numbers, 5x faster. */
   const idx=vals.map((v,i)=>[v,i]).sort((a,b)=>a[0]-b[0]);
   const out=new Array(vals.length);
@@ -1066,7 +1066,7 @@ function scoreAll(s){
   for(const k in raw) pct[k]=percentiles(raw[k]);
 
   /* Six levels, non-linear. A flat scale can't express "this matters, but
-     that matters more" across 13 factors — everything piles into the middle.
+     that matters more" across 13 factors: everything piles into the middle.
      The curve keeps the top level genuinely decisive instead of diluted. */
   const W=[0,1,2,3.5,6,10], wt=f=>W[s.weights[f.k]];
   const tw=FACTORS.reduce((n,f)=>n+wt(f),0)||1;
@@ -1161,7 +1161,7 @@ function render(){
   }).sort((a,b)=>b.fit-a.fit);
 
   if(!state.allrings){
-    // Keyed on the anchor name, not a numeric id — the contract has no such
+    // Keyed on the anchor name, not a numeric id; the contract has no such
     // id, and the old key silently deduped every place into one.
     const seen=new Set();
     res=res.filter(r=>{
@@ -1182,7 +1182,7 @@ function render(){
 
   if(!res.length){
     $("#rows").innerHTML=`<div class="empty"><b>Nothing clears those filters.</b>
-      Try loosening the lot minimum, the drive-time limit or the price ceiling — the ranking will come straight back.</div>`;
+      Try loosening the lot minimum, the drive-time limit or the price ceiling; the ranking will come straight back.</div>`;
     return;
   }
 
@@ -1245,14 +1245,14 @@ function fillSheet(r,rank,total){
       <span class="label">${e.leftover<0?"Estimated annual shortfall":"Estimated annual money left over"}</span>
       <div class="big" style="${e.leftover<0?"color:var(--deficit)":""}">${money(e.leftover)}</div>
       <p class="cap">${e.leftover<0
-        ? "On this income this place doesn't clear its own costs — you'd be short each year before saving anything."
+        ? "On this income this place doesn't clear its own costs. You'd be short each year before saving anything."
         : `After every tax, ${s.tenure==="own"?"mortgage, property tax, insurance and upkeep":"rent"}, driving, and typical costs for ${e.people} ${e.people===1?"person":"people"}${s.dogs+s.cats?" and "+(s.dogs+s.cats)+" "+((s.dogs+s.cats)===1?"pet":"pets"):""} at local prices.`}</p>
       <div class="ledger">
         ${taxRows}
         <div><span>${s.tenure==="own"?"Housing, all in":"Rent"}</span><span>−${money(e.housing)}</span></div>
         <div style="padding-left:12px;color:var(--on-dim)"><span>of which home insurance, at ${(L.insRate*100).toFixed(2)}%</span><span>${money(e.insurance)}</span></div>
         <div><span>Driving, ${L.commute} min each way</span><span>−${money(e.driving)}</span></div>
-        ${s.dogs+s.cats?`<div><span>${s.dogs?s.dogs+(s.dogs>1?" dogs":" dog"):""}${s.dogs&&s.cats?", ":""}${s.cats?s.cats+(s.cats>1?" cats":" cat"):""} — vet, food, care</span><span>−${money(e.pets)}</span></div>`:""}
+        ${s.dogs+s.cats?`<div><span>${s.dogs?s.dogs+(s.dogs>1?" dogs":" dog"):""}${s.dogs&&s.cats?", ":""}${s.cats?s.cats+(s.cats>1?" cats":" cat"):""}: vet, food, care</span><span>−${money(e.pets)}</span></div>`:""}
         <div><span>Sales tax at ${a.salesTax.toFixed(1)}%</span><span>−${money(e.salesTax)}</span></div>
         <div><span>Everything else</span><span>−${money(e.baseLiving)}</span></div>
         ${Math.abs(e.pub.total)>200?`<div style="color:${e.pub.total>0?"var(--primary)":"var(--on-var)"}"><span>Public services, net of what you'd buy privately</span><span>${e.pub.total>0?"+":""}${money(e.pub.total)}</span></div>`:""}
@@ -1287,7 +1287,7 @@ function fillSheet(r,rank,total){
     <div class="card">
       <span class="label">Disaster risk, and what it costs</span>
       <div class="big">${L.hazard}<span style="font-size:14px;color:var(--on-dim)"> / 100 today</span></div>
-      <p class="cap">Projected to reach roughly <b style="color:var(--on)">${Math.round(L.hazard*0.7+a.hazTrend*0.3)}</b> by 2050. Home insurance here runs <b style="color:var(--on)">${(L.insRate*100).toFixed(2)}%</b> of value a year — ${money(e.insurance)} on this home. Climate risk reaches most households as an insurance bill long before it reaches them as a disaster.</p>
+      <p class="cap">Projected to reach roughly <b style="color:var(--on)">${Math.round(L.hazard*0.7+a.hazTrend*0.3)}</b> by 2050. Home insurance here runs <b style="color:var(--on)">${(L.insRate*100).toFixed(2)}%</b> of value a year, ${money(e.insurance)} on this home. Climate risk reaches most households as an insurance bill long before it reaches them as a disaster.</p>
       <div style="margin-top:14px">
         ${[["Wildfire",L.v.wildfire],["Flooding",L.v.flood],["Hurricane and wind",L.v.wind],["Earthquake",L.v.quake],["Extreme heat",Math.round(L.heatRisk)]]
           .map(([n,v])=>`<div class="frow" style="grid-template-columns:112px 1fr 34px">
@@ -1295,7 +1295,7 @@ function fillSheet(r,rank,total){
             <span class="track"><i style="left:0;width:${Math.round(v)}%;background:${v>=60?"var(--deficit)":"var(--primary)"}"></i></span>
             <span class="fv">${Math.round(v)}</span></div>`).join("")}
       </div>
-      <p class="note">${L.b.k>=3?"Wildfire exposure is higher this far out — the wildland-urban interface is where houses actually burn.":L.b.k<=1?"Wildfire exposure is lower in built-up areas, but extreme heat is higher.":"Mid-ring exposure."}</p>
+      <p class="note">${L.b.k>=3?"Wildfire exposure is higher this far out: the wildland-urban interface is where houses actually burn.":L.b.k<=1?"Wildfire exposure is lower in built-up areas, but extreme heat is higher.":"Mid-ring exposure."}</p>
     </div>
 
     <div class="card">
@@ -1312,8 +1312,8 @@ function fillSheet(r,rank,total){
       <dl class="kv" style="margin-top:10px">
         <dt>State policy environment</dt><dd>${LEAN(a.stateLean)}</dd>
         <dt>This ring, locally</dt><dd>${LEAN(L.localLean)}</dd>
-        <dt>Match to what you chose — state</dt><dd>${Math.round(p.state)}</dd>
-        <dt>Match to what you chose — local</dt><dd>${Math.round(p.local)}</dd>
+        <dt>Match to what you chose (state)</dt><dd>${Math.round(p.state)}</dd>
+        <dt>Match to what you chose (local)</dt><dd>${Math.round(p.local)}</dd>
       </dl>
       <p class="note">${Math.abs(a.stateLean-L.localLean)>22
         ? "The state and this ring pull in noticeably different directions. Worth knowing which of the two you actually care about."
@@ -1384,8 +1384,8 @@ async function boot(){
     await loadData();
   }catch(err){
     showState("The dataset didn't load.",
-      `${err.message}<br><br>Nothing here is guessed when the data is missing — `+
-      `the page would rather show you this than a ranking built on nothing. `+
+      `${err.message}<br><br>Nothing here is guessed when the data is missing. `+
+      `The page would rather show you this than a ranking built on nothing. `+
       `If you are running locally, serve the folder over http rather than opening the file directly.`);
     return;
   }
