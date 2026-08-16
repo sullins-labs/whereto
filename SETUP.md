@@ -1,11 +1,11 @@
-# Setup — one evening, all free
+# Setup: one evening, all free
 
 Order matters. Each step depends on the one before it.
 
-## 1. GitHub repository — **public**
+## 1. GitHub repository: **public**
 
 ```bash
-gh repo create sullinslabs/whereto --public --source=. --push
+gh repo create sullins-labs/whereto --public --source=. --push
 ```
 
 Public is not cosmetic. Actions minutes are **unlimited on public repos** and
@@ -14,7 +14,7 @@ piece: the code being readable *is* the artifact.
 
 Nothing secret lives in the repo. Keys go in Settings → Secrets, never in files.
 
-## 2. Free API keys — five forms, about fifteen minutes
+## 2. Free API keys: five forms, about fifteen minutes
 
 | Secret name | Register |
 |---|---|
@@ -31,7 +31,7 @@ gh secret set CENSUS_API_KEY --body "..."
 Register for BLS specifically. Unregistered is 25 calls a day against the 126
 this pipeline needs; registered is 500.
 
-## 3. First cold build — run it locally, not in CI
+## 3. First cold build: run it locally, not in CI
 
 ```bash
 pip install -r requirements.txt
@@ -59,23 +59,46 @@ collide with the live site.
 Live URL: <https://sullinslabs.com/whereto/index.html>
 
 The zero-cost argument below still holds, and for the same reason: the site
-is purely static, so nothing in the stack meters per request. Netlify serves
-it on the free tier with no bandwidth cap on static assets.
+is purely static, so nothing in the stack meters per request. Netlify's free
+tier does include a bandwidth allowance rather than being uncapped the way
+Cloudflare Pages was, so that is the one number worth watching. At 100 GB a
+month against a roughly 3 MB cold visit, it takes on the order of 30,000
+visits a month to reach it, and the failure mode is being asked to upgrade
+rather than an unexpected bill.
 
 ### How the app reaches production now
 
-`site/` is the source of what is served at `/whereto/`. The sullinslabs repo
-holds a deployed copy at `public/whereto/`. Keep these in sync deliberately:
+**This repo is authoritative for the whole app.** That includes the markup,
+the scoring code, the Sullins Labs theming and the built data. The sullinslabs
+repo holds a deployed copy at `public/whereto/` which is generated, never
+hand-edited. Anything edited there is lost on the next sync.
 
-- `site/index.html` and `site/theme-tokens.css` are the presentation layer.
-  Both are written to be portable, so they work whether the app is served
-  from a domain root or from a subpath. `theme-tokens.css` is linked
-  relatively, and the back link is an absolute URL to `sullinslabs.com`.
-- `data/dist/places.json` is the build output this pipeline produces, and is
-  the file that actually needs to flow to the deployed copy after each run.
+That boundary exists because the two copies had already diverged once: the
+deployed copy grew the theme toggle, the back link and `theme-tokens.css`
+while `site/` did not. Those changes now live here, where the pipeline that
+keeps changing the app can also change its markup.
 
-Do not blind-copy `site/` over `public/whereto/` in either direction without
-diffing first.
+Three files cross the boundary, and only in this direction:
+
+| From this repo | To `public/whereto/` | Changes when |
+|---|---|---|
+| `site/index.html` | `index.html` | the app changes |
+| `site/theme-tokens.css` | `theme-tokens.css` | the theming changes |
+| `data/dist/places.json` | `data/places.json` | every ETL run |
+
+Both presentation files are written to be portable, so they work served from
+a domain root or from a subpath: `theme-tokens.css` is linked relatively and
+the back link is an absolute URL to `sullinslabs.com`.
+
+```bash
+sh scripts/sync-to-sullinslabs.sh            # dry run, shows what differs
+sh scripts/sync-to-sullinslabs.sh --apply    # copy
+```
+
+The script refuses to run in the other direction, normalises line endings to
+LF to match what is committed in the sullinslabs repo, and reports the files
+that actually differ so a routine data-only run does not touch the markup.
+Publishing stays a separate, deliberate step.
 
 ## 5. Turn on the schedule
 
@@ -85,9 +108,15 @@ builds, runs the tests, pushes snapshots to a Release, and commits
 `data/dist/places.json`.
 
 Note that committing that file does **not** currently redeploy anything. The
-sullinslabs site is deployed manually with `netlify deploy --prod`, so a new
-`places.json` has to be copied into that repo and published there. Wiring
-this up automatically is an open task.
+sullinslabs site is deployed manually, so publishing a fresh dataset is two
+more steps after the workflow finishes:
+
+```bash
+sh scripts/sync-to-sullinslabs.sh --apply
+cd ../sullinslabs && netlify deploy --prod
+```
+
+Wiring that up automatically is an open task.
 
 ---
 
@@ -99,10 +128,10 @@ Nothing, and structurally so.
 |---|---|---|
 | GitHub Actions | unlimited, public repos | 7 min/month, 29 in an annual month |
 | GitHub Releases | 2 GB per asset | 0.05 GB/month, split by source |
-| Repository | 1 GB soft limit | ~3 MB — snapshots are never committed |
-| Cloudflare Pages | 500 builds/month, uncapped bandwidth | ~2 builds/month |
+| Repository | 1 GB soft limit | ~3 MB, snapshots are never committed |
+| Netlify | 100 GB/month bandwidth | ~2 deploys/month, built locally |
 | Every data API | free with a key | 126 of 450 daily calls at the tightest point |
 
-Two things would break it: making the repo private, and monetising the site —
+Two things would break it: making the repo private, and monetising the site,
 at which point Open-Meteo's and MIT's non-commercial tiers stop applying. Both
 sources sit behind swappable adapters for exactly that reason.

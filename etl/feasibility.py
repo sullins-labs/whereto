@@ -57,9 +57,12 @@ FREE = {
   "actions_minutes_private": 2_000,
   "release_asset_gb": 2,
   "repo_soft_limit_gb": 1,
-  "cf_pages_builds_month": 500,
-  "cf_pages_bandwidth": None,        # no cap on static assets
+  "netlify_bandwidth_gb": 100,       # free-tier monthly allowance
+  "netlify_build_minutes": None,     # not consumed: deploys are built locally
 }
+
+# A cold visit is the page plus the whole dataset, since scoring is client side.
+VISIT_MB = 3.2
 
 # rough per-source processing time on a 2-core Actions runner
 CPU_MIN = {"noaa_normals": 4.5, "fema_nri": 1.2, "nces_ccd": 1.0, "epa_aqs": 0.8,
@@ -129,9 +132,9 @@ STORAGE
   in-repo data          ~0.003 GB  (places.json only; snapshots never committed)
   repo soft limit       {FREE['repo_soft_limit_gb']} GB{'':<20}→ fits with room
 
-CLOUDFLARE PAGES
-  builds                ~2/month                      → {FREE['cf_pages_builds_month']}/month free
-  bandwidth             static assets                 → no cap
+NETLIFY
+  deploys               ~2/month                      → built locally, no CI minutes
+  bandwidth             {FREE['netlify_bandwidth_gb']} GB/month allowance{'':<9}→ ~{FREE['netlify_bandwidth_gb'] * 1024 / VISIT_MB:,.0f} cold visits at {VISIT_MB} MB
   serverless surface    none                          → nothing metered can bill
 
 VERDICT""")
