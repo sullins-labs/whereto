@@ -101,9 +101,22 @@ def extract(county_pop: dict[str, int], year: int = 2025) -> dict[str, dict]:
     agencies and 51 states, and the per-agency pattern would blow the daily
     quota before finishing the alphabet.
     """
-    xw_path = fetch(
+    # Fails immediately rather than retrying four times against an endpoint
+    # already proven gone. The investigation is written up on the fbi_cde entry
+    # in config.py; the short version is that the bulk agency download was
+    # withdrawn, summarized/state now returns state aggregates instead of
+    # agency rows, and county figures would cost one call per agency against
+    # roughly 43,000 agencies.
+    raise RuntimeError(
+        "FBI county-level crime is not obtainable from the current CDE API. "
+        "See the notes on the fbi_cde source in config.py before spending an "
+        "afternoon on it. Crime reads 'not reported' in the interface, which "
+        "is accurate."
+    )
+
+    xw_path = fetch(                                        # noqa: F821 - unreachable
         "fbi_cde",
-        "https://api.usa.gov/crime/fbi/cde/agency/download",
+        "https://api.usa.gov/crime/fbi/cde/agency/byStateAbbr/{state}",
         filename="agency_reference.csv",
     )
     crosswalk = ori_to_county(list(csv.DictReader(

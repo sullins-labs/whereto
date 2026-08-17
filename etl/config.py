@@ -242,21 +242,54 @@ register(Source(
 register(Source(
     key="fbi_cde",
     name="FBI Crime Data Explorer: agency offences",
-    url="https://api.usa.gov/crime/fbi/cde/estimate/state/{state}/{offense}",
+    url="https://api.usa.gov/crime/fbi/cde/agency/byStateAbbr/{state}",
     cadence="annual", licence="Public domain", redistributable=True,
     needs_key="FBI_CDE_API_KEY",
+    # api.data.gov calls it api_key. Sending "key" returns 403, which reads as
+    # a bad key rather than a bad parameter name.
+    key_param="api_key",
+    verified=False,
     notes=(
-        "Coverage is not universal and varies by agency. validate.py refuses "
-        "to emit a crime figure for any county below the coverage floor rather "
-        "than silently publishing a number built from partial reporting."
+        "NOT CURRENTLY OBTAINABLE AT COUNTY LEVEL. Investigated 2026-08-17; "
+        "recorded here so the same dead ends are not walked twice. The bulk "
+        "endpoint this pipeline used, cde/agency/download, is gone (404). "
+        "cde/summarized/state/{ST}/{offense} still answers but now returns "
+        "state aggregates rather than the agency rows it used to, and there is "
+        "no county endpoint: cde/summarized/county/{fips} is a 404. Valid "
+        "offences are violent-crime and property-crime, not 'all'. "
+        "cde/agency/byStateAbbr/{ST} does work and returns every agency with "
+        "its county name, and cde/summarized/agency/{ORI}/{offense} returns "
+        "counts for one agency, so county figures are reachable in principle "
+        "at one call per agency. Measured across PA, TX, CA, VT and WY that is "
+        "roughly 43,000 agencies nationally, which against api.data.gov's "
+        "1,000 requests an hour is about 43 hours of continuous calling for a "
+        "single refresh, versus the 51 calls this source is budgeted. "
+        "ICPSR archives county-level UCR files but behind registration, which "
+        "does not fit a pipeline built on free keys and public files. "
+        "Crime therefore reads 'not reported' rather than being filled from "
+        "state averages, which would attach a state's rate to every county in "
+        "it and be wrong in exactly the places people are comparing. "
+        "Coverage was never universal anyway: validate.py refuses to emit a "
+        "crime figure for any county below the coverage floor rather than "
+        "publishing a number built from partial reporting."
     ),
 ))
 
 register(Source(
     key="nces_ccd",
     name="NCES Common Core of Data: district finance and enrolment",
-    url="https://nces.ed.gov/ccd/Data/zip/ccd_lea_finance.zip",
+    # The School District Finance Survey (F-33). Files are named sdf{YY}_1a,
+    # by fiscal year, and FY2022 is the newest published as of 2026-08-17:
+    # sdf23 and sdf24 both 404. School finance runs two to three years behind,
+    # so this is current rather than stale.
+    url="https://nces.ed.gov/ccd/Data/zip/sdf22_1a.zip",
     cadence="annual", licence="Public domain", redistributable=True,
+    notes=(
+        "One tab-delimited .txt inside the zip, carrying LEAID, CONUM (the "
+        "county), V33 (enrolment) and TOTALEXP together, so district finance "
+        "and the county crosswalk arrive in a single fetch. No teacher count "
+        "is collected here, so pupils_per_teacher is left null."
+    ),
 ))
 
 # ------------------------------------------------------------------ politics
