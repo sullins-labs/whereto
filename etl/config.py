@@ -175,7 +175,18 @@ register(Source(
 register(Source(
     key="fema_nri",
     name="FEMA National Risk Index, counties",
-    url="https://hazards.fema.gov/nri/Content/StaticDocuments/DataDownload/NRI_Table_Counties/NRI_Table_Counties.zip",
+    # hazards.fema.gov retired the whole StaticDocuments tree: every path under
+    # it, including PDFs search engines still index, 301s to a RAPT landing
+    # page and then 403s. The data itself is still published by FEMA, from
+    # their own ArcGIS account (FEMA_NationalRiskIndex), backing this layer:
+    #   services.arcgis.com/XG15cJAlne2vxtgt/arcgis/rest/services/
+    #     National_Risk_Index_Counties/FeatureServer/0
+    # That layer caps at 2,000 records against 3,232 counties, so it would
+    # need paging. The Hub download below returns the whole table as one csv,
+    # which is one fetch and one checksum.
+    url=("https://hub.arcgis.com/api/v3/datasets/"
+         "39485e8035d446a5bff03259508ae355_0/downloads/data"
+         "?format=csv&spatialRefId=4326"),
     cadence="multi-year", licence="Public domain", redistributable=True,
     notes=(
         "Eighteen hazards with expected annual loss per county. FEMA retired "
@@ -187,7 +198,12 @@ register(Source(
 register(Source(
     key="noaa_normals",
     name="NOAA NCEI 1991-2020 Climate Normals, monthly",
-    url="https://www.ncei.noaa.gov/data/normals-monthly/1991-2020/access/",
+    # The access/ path is a directory index of ~15,600 per-station files, so
+    # fetching it returned an HTML listing that the csv parser read as data.
+    # archive/ carries the same release as one tarball.
+    url=("https://www.ncei.noaa.gov/data/normals-monthly/1991-2020/archive/"
+         "us-climate-normals_1991-2020_v1.0.1_monthly_multivariate_by-station"
+         "_c20230404.tar.gz"),
     cadence="decennial", licence="Public domain", redistributable=True,
     notes="Station-level. Aggregated to county by inverse-distance weighting.",
 ))

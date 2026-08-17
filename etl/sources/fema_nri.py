@@ -5,7 +5,7 @@ most tools use, but the components are what people actually decide on: a
 household weighing wildfire against hurricane wants both, not their average.
 """
 from __future__ import annotations
-import csv, io, zipfile
+import csv, io
 from ..snapshot import fetch
 
 # NRI column prefix -> our field. Each has a _RISKS (score) and _EALT (expected
@@ -13,6 +13,9 @@ from ..snapshot import fetch
 # for the insurance model, because a score cannot be turned into a premium.
 HAZARDS = {
     "WFIR": "wildfire",
+    # Riverine flooding. The FeatureServer's own metadata calls this field
+    # IFLD, but the csv export writes the RFLD alias, so read what the export
+    # actually emits rather than what the layer describes.
     "RFLD": "flood_riverine",
     "CFLD": "flood_coastal",
     "HRCN": "hurricane",
@@ -34,10 +37,10 @@ def _f(row: dict, key: str) -> float | None:
 
 
 def extract() -> dict[str, dict]:
-    path = fetch("fema_nri", filename="NRI_Table_Counties.zip")
-    with zipfile.ZipFile(path) as z:
-        member = next(n for n in z.namelist() if n.lower().endswith(".csv"))
-        text = z.read(member).decode("utf-8-sig", errors="replace")
+    # One flat csv now rather than a csv inside a zip; see config for why the
+    # zip went away. utf-8-sig because the export carries a BOM.
+    path = fetch("fema_nri", filename="nri_counties.csv")
+    text = path.read_text(encoding="utf-8-sig", errors="replace")
 
     out: dict[str, dict] = {}
     for row in csv.DictReader(io.StringIO(text)):

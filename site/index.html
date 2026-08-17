@@ -1121,6 +1121,13 @@ function signature(r,s){
 /* ---------- render ---------- */
 const $=q=>document.querySelector(q);
 const money=n=>(n<0?"−$":"$")+Math.abs(Math.round(n)).toLocaleString("en-US");
+/* A rate with its comparison to the national figure, or an honest gap.
+   Written because null < 300 is true in JavaScript, so a county with no
+   reported crime data rendered as "null · below U.S.", which reads as good
+   news rather than as missing data. A source that fails degrades its fields
+   to null, so this is the normal case, not the edge case. */
+const rate=(v,hi,lo)=>v==null?"not reported"
+  :v.toLocaleString("en-US")+(v>hi?" · above U.S.":v<lo?" · below U.S.":"");
 const acres=v=>v<1?`${v.toFixed(2)} acre`:`${v.toFixed(v<10?1:0)} acres`;
 const LEAN=v=>v>=78?"solidly progressive":v>=60?"leaning progressive":v>=41?"mixed":v>=23?"leaning conservative":"solidly conservative";
 
@@ -1301,8 +1308,8 @@ function fillSheet(r,rank,total){
     <div class="card">
       <span class="label">Safety from crime</span>
       <dl class="kv" style="margin-top:10px">
-        <dt>Violent crime, per 100,000</dt><dd>${L.v.violent}${L.v.violent>420?" · above U.S.":L.v.violent<300?" · below U.S.":""}</dd>
-        <dt>Property crime, per 100,000</dt><dd>${L.v.property}${L.v.property>2200?" · above U.S.":L.v.property<1600?" · below U.S.":""}</dd>
+        <dt>Violent crime, per 100,000</dt><dd>${rate(L.v.violent,420,300)}</dd>
+        <dt>Property crime, per 100,000</dt><dd>${rate(L.v.property,2200,1600)}</dd>
       </dl>
       <p class="note">Crime falls steeply from the core outward, then flattens; rural rates are not uniformly the lowest. Reported offences only, and reporting coverage varies by agency.</p>
     </div>

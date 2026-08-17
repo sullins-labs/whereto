@@ -174,6 +174,9 @@ def _wrong_shape(name: str, body: bytes) -> str | None:
         # Both are zip containers, so both must start with the local file header.
         if not body.startswith(b"PK"):
             return "HTML page, not an archive" if looks_html else "not a zip archive"
+    elif name.endswith((".gz", ".tgz")):
+        if not body.startswith(b"\x1f\x8b"):
+            return "HTML page, not an archive" if looks_html else "not a gzip archive"
     elif name.endswith((".csv", ".json")) and looks_html:
         return "HTML page, not data"
     return None
