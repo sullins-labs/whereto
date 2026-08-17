@@ -1,7 +1,7 @@
 # Sources
 
 Each source is two files: an entry in `config.py` declaring what it is, what it
-costs and what its licence permits, and a module here that turns the archived
+costs and what its license permits, and a module here that turns the archived
 bytes into county records. Nothing here touches the network directly; modules
 ask `snapshot.fetch`, and the archive fetches only when it must.
 
@@ -45,14 +45,14 @@ during an outage.
 
 `config.py` gives every source a `role`.
 
-- **primary** may be scored on and appears in the published licence table.
+- **primary** may be scored on and appears in the published license table.
 - **validation** may never be scored on, under any circumstance, outage
   included. `build.py` asserts at publish time that no validation-derived value
   reaches `places.json`, because a rule nothing checks is a preference.
 
-tonmcg carries an MIT licence, confirmed by reading the `LICENSE` file in the
+tonmcg carries an MIT license, confirmed by reading the `LICENSE` file in the
 repository rather than trusting a badge, so redistribution would be permitted.
-It is still validation-only. The disqualifier is provenance, not licence.
+It is still validation-only. The disqualifier is provenance, not license.
 
 Its value is that MEDSL derives from state-certified returns and tonmcg from
 news feeds. Two datasets built the same way agreeing tells you nothing;

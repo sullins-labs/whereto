@@ -63,7 +63,7 @@ check("candidates within a party are summed",
 
 
 # ------------------------------------------------------------------ FIPS form
-print("\nFIPS normalisation")
+print("\nFIPS normalization")
 check("integer FIPS zero-pads", _fips(1001) == "01001", _fips(1001))
 check("float-ish FIPS zero-pads", _fips("1001.0") == "01001", _fips("1001.0"))
 check("string FIPS is preserved", _fips("01001") == "01001", _fips("01001"))
@@ -199,10 +199,10 @@ print("  ok  a clean payload passes")
 try:
     _assert_no_validation_sources(
         {"sources": [{"name": validation[0].name}], "places": []})
-    raise AssertionError("a validation source in the licence table was accepted")
+    raise AssertionError("a validation source in the license table was accepted")
 except RuntimeError as exc:
     check("listing it as a source of the numbers is refused",
-          "licence table" in str(exc))
+          "license table" in str(exc))
 
 try:
     _assert_no_validation_sources(

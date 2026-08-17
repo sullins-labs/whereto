@@ -2,7 +2,7 @@
 classification is well known. No network required."""
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
-from etl.spine import County, assign_rings, split_core_counties, summarise, RING_NAMES
+from etl.spine import County, assign_rings, split_core_counties, summarize, RING_NAMES
 
 def c(fips,name,st,lat,lon,area,pop,cbsa,cbsa_name,central,rucc):
     return County(fips=fips,name=name,state=st,lat=lat,lon=lon,land_sq_mi=area,
@@ -29,7 +29,7 @@ print("ring assignment:")
 for x in COUNTIES:
     print(f"  {x.name+', '+x.state:<22} ring {x.ring} {RING_NAMES[x.ring]:<15} "
           f"drive {str(x.drive_min)+'m':<6} {x.notes[0][:60]}")
-print("\nsummary:", summarise(COUNTIES))
+print("\nsummary:", summarize(COUNTIES))
 
 assert rings["42003"].ring == 0, "Allegheny (Pittsburgh) should be core"
 assert rings["36061"].ring == 0, "Manhattan should be core"

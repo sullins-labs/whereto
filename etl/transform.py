@@ -1,6 +1,6 @@
 """Join and derive.
 
-Two jobs. First, enforce the licence constraints declared in config: a source
+Two jobs. First, enforce the license constraints declared in config: a source
 marked non-redistributable may inform a derived value but must never appear in
 the output verbatim. Doing that here rather than in a README means it is a test
 that fails, not a note somebody remembers.
@@ -13,7 +13,7 @@ from __future__ import annotations
 from .config import SOURCES
 
 # Fields that come straight from a restricted source. Any of these appearing in
-# an output record is a licence breach, so they are stripped after being used.
+# an output record is a license breach, so they are stripped after being used.
 RESTRICTED_PASSTHROUGH = {
     "zillow_zhvi": {"home_value_series", "zhvi_history"},
     "mit_election": {"candidatevotes", "county_returns"},
@@ -52,7 +52,7 @@ def insurance_rate(hazard: float | None, eal_total: float | None,
     Preference order matters. Where FEMA publishes an expected annual loss and
     we know the home value, the rate is grounded in dollars and the source says
     so. Where it does not, a curve fitted to hazard score stands in — clearly
-    labelled, because a modelled premium and a measured one should never be
+    labeled, because a modeled premium and a measured one should never be
     mistaken for each other.
     """
     if eal_total and home_value and home_value > 0:
@@ -63,7 +63,7 @@ def insurance_rate(hazard: float | None, eal_total: float | None,
         return round(base, 5), "FEMA expected annual loss"
     if hazard is None:
         return None, "unavailable"
-    return round(0.003 + (hazard / 100) ** 1.6 * 0.014, 5), "modelled from hazard score"
+    return round(0.003 + (hazard / 100) ** 1.6 * 0.014, 5), "modeled from hazard score"
 
 
 def crime_index(rec: dict) -> float | None:
@@ -122,8 +122,8 @@ def derive(rec: dict) -> dict:
         caveats.append("cost of living is the state non-metro figure")
     if rec.get("crime_suppressed"):
         caveats.append(rec["crime_suppressed"])
-    if rec.get("insurance_basis") == "modelled from hazard score":
-        caveats.append("insurance rate modelled, not observed")
+    if rec.get("insurance_basis") == "modeled from hazard score":
+        caveats.append("insurance rate modeled, not observed")
     if any("heterogeneous" in n for n in rec.get("spine_notes", [])):
         caveats.append("county spans core and rural; values are an average over unlike places")
     if caveats:

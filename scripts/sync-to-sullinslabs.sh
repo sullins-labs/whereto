@@ -57,7 +57,7 @@ for pair in "$@"; do
     exit 1
   fi
 
-  # Compare with line endings normalised, so a CRLF/LF difference alone is not
+  # Compare with line endings normalized, so a CRLF/LF difference alone is not
   # reported as a change. site/ is CRLF in git; the deployed copy has been LF.
   # If the source is already LF the sed is a no-op and this is a plain compare.
   if [ -f "$dst" ] && sed 's/\r$//' "$src" | diff -q - "$dst" >/dev/null 2>&1; then

@@ -12,22 +12,22 @@ meta:
     - "NIEER, The State of Preschool 2024 yearbook, percent of 4-year-olds enrolled in state-funded preschool, 2023-24 school year"
     - "NCES/IPEDS via Education Data Initiative, average published in-state tuition and fees, public four-year, AY 2025-26"
     - "KFF, status of state action on the Medicaid expansion decision"
-    - "State statutes establishing paid family and medical leave programmes"
+    - "State statutes establishing paid family and medical leave programs"
     - "NASSGAP, 55th Annual Survey Report on State-Sponsored Student Financial Aid, Table 12, estimated undergraduate grant dollars per undergraduate FTE, 2023-24"
   review_notes: >-
     prek_coverage_pct and tuition_instate are transcribed from the two tables
     named above and cover all 51 jurisdictions at one vintage each.
     medicaid_expansion and paid_family_leave are binary facts about statute.
     Paid leave is recorded as whether benefits are actually payable during
-    2026, not whether a law has been passed, because a programme still phasing
-    in pays a household nothing. Maryland has enacted a programme whose
+    2026, not whether a law has been passed, because a program still phasing
+    in pays a household nothing. Maryland has enacted a program whose
     benefits do not begin in 2026, so it is recorded false.
 
     grant_aid_per_student comes from NASSGAP Table 12, which already divides
     each state's undergraduate grant spending by its IPEDS undergraduate FTE,
     so it is a published ratio rather than one computed here. It is the one
     figure in this file on a different vintage: 2023-24, from the most recent
-    survey published, where tuition is 2025-26. Grant programmes move slowly
+    survey published, where tuition is 2025-26. Grant programs move slowly
     enough that mixing them is defensible, and saying so is cheaper than
     pretending they match. Wyoming reports none, which is why it is 0.
 
@@ -38,7 +38,7 @@ meta:
 
     senior_property_relief_pct is zero for every state, and that is a decision
     rather than an oversight. Every state offers something,
-    but the programmes are income-tested at thresholds low enough that the
+    but the programs are income-tested at thresholds low enough that the
     typical retired household in this model may not qualify at all
     (Pennsylvania cuts off at $35,000, Utah at $44,221), and they are
     structured four different ways. A single fraction per state would misstate
@@ -111,7 +111,7 @@ states:
     paid_family_leave: true
     senior_property_relief_pct: 0.0
     note: >-
-      The highest preschool enrolment in the country by a wide margin, and
+      The highest preschool enrollment in the country by a wide margin, and
       effectively universal. For a household with a four-year-old this is the
       largest single service difference in the file.
   FL:
@@ -123,7 +123,7 @@ states:
     senior_property_relief_pct: 0.0
     note: >-
       The cheapest public tuition in the country alongside high preschool
-      enrolment, against no Medicaid expansion. Which way that nets depends
+      enrollment, against no Medicaid expansion. Which way that nets depends
       almost entirely on the household's age and insurance.
   GA:
     prek_coverage_pct: 55
@@ -146,7 +146,7 @@ states:
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
-    note: "No state-funded preschool programme."
+    note: "No state-funded preschool program."
   IL:
     prek_coverage_pct: 35
     tuition_instate: 16202
@@ -207,9 +207,9 @@ states:
     paid_family_leave: false
     senior_property_relief_pct: 0.0
     note: >-
-      A paid family leave programme is enacted but benefits are not payable
+      A paid family leave program is enacted but benefits are not payable
       during 2026, so it is recorded false. A household cannot spend a
-      programme that has not started.
+      program that has not started.
   MA:
     prek_coverage_pct: 30
     tuition_instate: 15885
@@ -252,7 +252,7 @@ states:
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
-    note: "No state-funded preschool programme."
+    note: "No state-funded preschool program."
   NE:
     prek_coverage_pct: 34
     tuition_instate: 9613
@@ -275,7 +275,7 @@ states:
     paid_family_leave: false
     senior_property_relief_pct: 0.0
     note: >-
-      No state preschool programme and among the most expensive public tuition
+      No state preschool program and among the most expensive public tuition
       in the country, which is the other side of having no income or sales tax.
   NJ:
     prek_coverage_pct: 34
@@ -327,7 +327,7 @@ states:
     paid_family_leave: false
     senior_property_relief_pct: 0.0
     note: >-
-      One of the oldest universal preschool programmes in the country, which is
+      One of the oldest universal preschool programs in the country, which is
       why a state with otherwise modest public spending ranks near the top here.
   OR:
     prek_coverage_pct: 17
@@ -364,7 +364,7 @@ states:
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
-    note: "No state-funded preschool programme."
+    note: "No state-funded preschool program."
   TN:
     prek_coverage_pct: 20
     tuition_instate: 11837
@@ -431,4 +431,4 @@ states:
     medicaid_expansion: false
     paid_family_leave: false
     senior_property_relief_pct: 0.0
-    note: "No state-funded preschool programme."
+    note: "No state-funded preschool program."

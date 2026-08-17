@@ -13,7 +13,7 @@
 </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Where To: finding your balance of city, space and cost</title>
+<title>Wheretolive: finding your balance of city, space and cost</title>
 <meta name="description" content="The real question isn't which metro. It's how far out from one. Set what matters; see where the balance lands.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -108,6 +108,18 @@ button{cursor:pointer;background:none;border:none;padding:0}
 :root[data-theme='light'] .sl-icon-sun{display:none}
 :root[data-theme='light'] .sl-icon-moon{display:block}
 
+/* The relationship to the parent brand should survive someone landing here
+   from a search result rather than from the homepage, so it is stated once in
+   words instead of resting entirely on a back arrow at the top. Mono, because
+   the design system sets product names in mono. */
+.sl-attrib{
+  margin:0 0 10px;
+  font-family:var(--f-num);font-size:12px;letter-spacing:.01em;
+  color:var(--on-var);
+}
+.sl-attrib a{color:var(--primary);text-decoration:none}
+.sl-attrib a:hover{text-decoration:underline;text-underline-offset:3px}
+
 /* ---------------- masthead ---------------- */
 .masthead{
   position:sticky;top:0;z-index:40;
@@ -138,14 +150,68 @@ button{cursor:pointer;background:none;border:none;padding:0}
 .notice-in svg{flex:none;margin-top:2px;color:var(--primary)}
 .notice-in b{color:var(--on);font-weight:500}
 
+/* ---------------- results bar ---------------- */
+/* Sticks directly under the masthead. --bar is 0 until there is a result, so
+   the panel's own sticky offset stays correct whether the bar is there or not
+   rather than being nudged by a magic number. */
+/* A declared height rather than a measured one. Reading offsetHeight back into
+   a custom property looks tidier and is not: it depends on layout having
+   settled, and a wrapped line silently becomes a 200px offset that pushes the
+   panel down the page. Fixed height, one line, ellipsis if the name is long. */
+:root{--bar:0px}
+:root.has-bar{--bar:41px}
+.resbar{
+  position:sticky;top:var(--mast);z-index:39;height:41px;
+  background:var(--surface);border-bottom:1px solid var(--outline-soft);
+}
+.resbar[hidden]{display:none}
+.resbar-in{
+  max-width:var(--maxw);margin:0 auto;padding:0 24px;height:100%;
+  display:flex;align-items:center;gap:10px;flex-wrap:nowrap;overflow:hidden;
+}
+.resbar-label{font-size:11.5px;color:var(--on-dim);letter-spacing:.01em}
+.resbar-name{
+  font-size:13.5px;font-weight:500;color:var(--on);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46ch;
+}
+.resbar-fit{font-size:12px;color:var(--on-dim)}
+.resbar-jump{
+  margin-left:auto;font-size:12.5px;font-weight:500;
+  color:var(--primary);text-decoration:none;
+}
+.resbar-jump:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ---------------- section rail ---------------- */
+/* Eight groups with no sense of where you are in them was the other half of
+   the problem. This is a position indicator, not navigation chrome, so it
+   stays quiet until you hover or it becomes current. */
+.rail{
+  position:sticky;top:0;z-index:2;
+  background:var(--bg);
+  padding:4px 0 10px;margin:0 0 4px;
+  display:flex;flex-wrap:wrap;gap:4px;
+}
+.rail a{
+  font-size:11px;line-height:1;color:var(--on-dim);
+  padding:5px 8px;border-radius:var(--r-pill);
+  border:1px solid transparent;text-decoration:none;
+  transition:color .13s,border-color .13s,background .13s;
+}
+.rail a:hover{color:var(--on);border-color:var(--outline-soft)}
+.rail a[aria-current="true"]{
+  color:var(--primary-strong);background:var(--primary-container);font-weight:500;
+}
+
 /* ---------------- layout ---------------- */
 .shell{
   max-width:var(--maxw);margin:0 auto;
   display:grid;grid-template-columns:var(--panel-w) minmax(0,1fr);align-items:start;
 }
 .panel{
-  padding:22px 22px 60px;position:sticky;top:var(--mast);
-  max-height:calc(100vh - var(--mast));overflow-y:auto;scrollbar-width:thin;
+  padding:22px 22px 60px;
+  position:sticky;top:calc(var(--mast) + var(--bar));
+  max-height:calc(100vh - var(--mast) - var(--bar));
+  overflow-y:auto;scrollbar-width:thin;
 }
 .results{padding:22px 24px 80px;min-width:0}
 
@@ -343,6 +409,11 @@ button{cursor:pointer;background:none;border:none;padding:0}
 .stable .lic{font-size:12px}
 .ok{color:var(--primary)}
 .rs{color:var(--deficit);font-weight:500}
+/* Whether the source actually landed in this build. "not available" is a
+   statement about today's file, not about the source being unusable. */
+.src-yes{color:var(--on-var)}
+.src-part{color:var(--deficit);font-weight:500}
+.src-no{color:var(--deficit);font-weight:500}
 
 footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5px;color:var(--on-dim)}
 
@@ -383,7 +454,7 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
 </div>
 <header class="masthead">
   <div class="masthead-in">
-    <p class="wordmark">Where<b>To</b></p>
+    <p class="wordmark">Where<b>to</b>live</p>
     <p class="masthead-q">The question isn't which metro. It's how far out from one, and who you'd be living among.</p>
     <span class="chip" id="vintage">Seed v0.4 · 60 anchors × 5 rings</span>
   </div>
@@ -396,10 +467,24 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
   </div>
 </div>
 
+<!-- Appears only once there is a ranking to point at. Eight groups of inputs
+     sit above the answer, and the answer updates on every one of them, so
+     this keeps the payoff reachable instead of making the visitor scroll back
+     to find out whether anything changed. -->
+<div class="resbar" id="resbar" hidden>
+  <div class="resbar-in">
+    <span class="resbar-label">Top match</span>
+    <span class="resbar-name mono" id="resbar-name"></span>
+    <span class="resbar-fit mono" id="resbar-fit"></span>
+    <a class="resbar-jump" href="#results">See the ranking</a>
+  </div>
+</div>
+
 <main class="shell">
   <aside class="panel" aria-label="Your priorities">
+    <nav class="rail" id="rail" aria-label="Jump to a section"></nav>
 
-    <div class="card">
+    <div class="card" data-rail="Life stage">
       <h2>Where you are in life</h2>
       <p class="hint">This sets a sensible starting point for everything below, and changes how your money is worked out. You can still adjust anything.</p>
       <div class="pills" id="phase" role="group" aria-label="Phase of life">
@@ -411,7 +496,7 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-rail="How far out">
       <h2>How far out?</h2>
       <p class="hint">Each anchor city is split into five rings. This is usually the decision that matters most.</p>
       <div class="pills" id="ring" role="group" aria-label="Preferred ring">
@@ -428,7 +513,7 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
       </label>
     </div>
 
-    <div class="card">
+    <div class="card" data-rail="Politics">
       <h2>Political and social climate</h2>
       <p class="hint">Scored as distance from where you say you want to be, so it works the same in either direction. Nothing here is rated better or worse.</p>
       <div class="field">
@@ -445,14 +530,14 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
         <label>What are you actually matching on?</label>
         <div class="pills" id="polscope" role="group" aria-label="Political scope">
           <button data-v="state" aria-pressed="false">State laws</button>
-          <button data-v="local" aria-pressed="false">My neighbours</button>
+          <button data-v="local" aria-pressed="false">My neighbors</button>
           <button data-v="both" aria-pressed="true">Both</button>
         </div>
         <p class="note">State law follows you into a rural county; local culture doesn't. Rings shift the local reading a long way; the same state can hold both.</p>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-rail="Priorities">
       <h2>What matters to you</h2>
       <p class="hint">Rate each from 0 to 5. Zero drops it entirely; five makes it decisive.</p>
       <div class="scalekey" aria-hidden="true"><span>0 ignore</span><span>2 nice</span><span>3 matters</span><span>5 decisive</span></div>
@@ -465,7 +550,7 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
       <button class="textbtn" id="reset">Reset to this phase of life</button>
     </div>
 
-    <div class="card">
+    <div class="card" data-rail="Weather">
       <h2>Your weather</h2>
       <p class="hint">Set the actual temperatures you want, because "warm" isn't a unit: one person's hot summer is another's mild one.</p>
       <div class="field">
@@ -479,7 +564,7 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-rail="Household">
       <h2>Your household</h2>
       <p class="hint" id="household-hint">Used to work out what's actually left over after every tax and housing.</p>
 
@@ -539,7 +624,7 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-rail="Filters">
       <h2>Rule things out</h2>
       <div class="field">
         <div class="readout"><label for="maxhome">Most you'd pay for a home</label><b id="maxhomeOut">No limit</b></div>
@@ -554,7 +639,7 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
         </select>
       </div>
       <div class="field">
-        <label for="maxcommute">Longest drive to a city centre</label>
+        <label for="maxcommute">Longest drive to a city center</label>
         <select id="maxcommute">
           <option value="0" selected>No limit</option>
           <option value="20">20 minutes</option><option value="35">35 minutes</option>
@@ -573,7 +658,7 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
     </div>
   </aside>
 
-  <section class="results" aria-label="Ranked results">
+  <section class="results" id="results" aria-label="Ranked results">
     <div class="rhead">
       <h1 id="headline">Where should you choose to live?</h1>
       <span class="rcount mono" id="rcount"></span>
@@ -590,34 +675,10 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
 
     <section class="sources">
       <h2>Where the real numbers come from</h2>
-      <p>Each factor maps to a named public source with a known refresh cadence and licence. Ring-level values are derived from the anchor using published density, lot-size and travel-time distributions. Political readings are descriptive measures of enacted law and recorded voting, not endorsements, and they are scored only as distance from what you asked for.</p>
+      <p>This table is written by the pipeline, not by hand, so it lists the sources that were actually pulled for the build you are looking at and says which of them came back empty. Ring-level values are derived from the anchor using published density, lot-size and travel-time distributions. Political readings are descriptive measures of enacted law and recorded voting, not endorsements, and they are scored only as distance from what you asked for.</p>
       <table class="stable">
-        <thead><tr><th>Factor</th><th>Source</th><th>Cadence</th><th>Licence</th></tr></thead>
-        <tbody>
-          <tr><td>Cost of living</td><td>BEA Regional Price Parities</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
-          <tr><td>Home values, rents</td><td>Zillow ZHVI / ZORI research files</td><td>Monthly</td><td class="lic rs">Attribution; no redistribution</td></tr>
-          <tr><td>Lot size, home size, density</td><td>Census ACS + county assessor rolls</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
-          <tr><td>Drive times, ring geometry</td><td>OpenStreetMap + OSRM isochrones</td><td>Continuous</td><td class="lic rs">ODbL, share-alike</td></tr>
-          <tr><td>Income and property tax</td><td>State revenue schedules, Census property tax</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
-          <tr><td>Sales tax, combined</td><td>Tax Foundation state and local rates</td><td>Twice yearly</td><td class="lic rs">Attribution</td></tr>
-          <tr><td>Retirement income treatment</td><td>State revenue codes, NCSL summaries</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
-          <tr><td>Public pre-K coverage</td><td>NIEER State of Preschool yearbook</td><td>Annual</td><td class="lic rs">Attribution</td></tr>
-          <tr><td>In-state tuition, state grant aid</td><td>IPEDS; NASSGAP survey of state grant programs</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
-          <tr><td>Medicaid expansion, exchange support</td><td>CMS; KFF state health facts</td><td>Continuous</td><td class="lic rs">Attribution</td></tr>
-          <tr><td>Paid family leave, senior tax relief</td><td>State statutes; Lincoln Institute property tax database</td><td>Annual</td><td class="lic rs">Mixed</td></tr>
-          <tr><td>Public schools</td><td>NCES CCD, EDFacts, state assessments</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
-          <tr><td>State policy environment</td><td>Correlates of State Policy, NCSL, MAP, RAND firearm law database</td><td>Annual</td><td class="lic rs">Mixed; several academic-use</td></tr>
-          <tr><td>Local political lean</td><td>MIT Election Lab county returns</td><td>Per election</td><td class="lic rs">CC BY-NC</td></tr>
-          <tr><td>Forest and public land</td><td>USGS PAD-US, USFS boundaries</td><td>Periodic</td><td class="lic ok">Public domain</td></tr>
-          <tr><td>Coastline proximity</td><td>NOAA shoreline, USGS NHD</td><td>Periodic</td><td class="lic ok">Public domain</td></tr>
-          <tr><td>Wildfire, flood, wind, quake</td><td>FEMA National Risk Index v1.20, USFS wildfire risk, FEMA NFHL flood layers</td><td>Multi-year</td><td class="lic ok">Public domain</td></tr>
-          <tr><td>Hazard trajectory to 2050</td><td>Open-Meteo downscaled IPCC; NOAA sea level rise viewer</td><td>Model release</td><td class="lic rs">CC BY 4.0, non-commercial tier</td></tr>
-          <tr><td>Home insurance rates</td><td>Modelled from hazard exposure; calibrated to NAIC state averages</td><td>Annual</td><td class="lic ok">Derived</td></tr>
-          <tr><td>Violent and property crime</td><td>FBI Crime Data Explorer, NIBRS agency submissions</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
-          <tr><td>Climate normals and outlook</td><td>NOAA NCEI normals; Open-Meteo downscaled IPCC</td><td>Decadal; model release</td><td class="lic rs">CC BY 4.0, non-commercial tier</td></tr>
-          <tr><td>Air quality</td><td>EPA AirNow / AQS</td><td>Hourly, annual</td><td class="lic ok">Public domain</td></tr>
-          <tr><td>Healthcare access</td><td>HRSA shortage areas, AHRF, CDC PLACES</td><td>Annual</td><td class="lic ok">Public domain</td></tr>
-        </tbody>
+        <thead><tr><th>Source</th><th>Refresh</th><th>License</th><th>In this build</th></tr></thead>
+        <tbody id="srcbody"></tbody>
       </table>
       <p class="note" style="max-width:72ch">Federal statistical products have become less dependable: NOAA retired its billion-dollar disasters series after 2024, BLS cut consumer price collection in several cities, and FEMA took the National Risk Index application offline while leaving the data downloadable. Every source is snapshotted at ingest and never deleted, so a series that disappears upstream still survives here.</p>
     </section>
@@ -625,7 +686,7 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
 </main>
 
 <div class="scrim" id="scrim"></div>
-<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-name" tabindex="-1">
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labeledby="sheet-name" tabindex="-1">
   <div class="sheet-hd">
     <div><h2 id="sheet-name"></h2><p id="sheet-sub"></p></div>
     <button class="close" id="close" aria-label="Close details">
@@ -636,8 +697,10 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
 </aside>
 
 <footer>
+  <p class="sl-attrib">Wheretolive is a Sullins Labs instrument.
+    <a href="https://sullinslabs.com/">sullinslabs.com</a></p>
   <p style="margin:0 0 5px">Scoring runs entirely in your browser. Your income, household, politics and priorities are never sent anywhere.</p>
-  <p style="margin:0">Static build, no backend. <span class="mono">sullinslabs.com</span></p>
+  <p style="margin:0">Static build, no backend.</p>
 </footer>
 
 <script>
@@ -688,7 +751,7 @@ const cap=v=>Math.max(0,Math.min(100,v));
    flat. Rather than rewrite the scoring code, the seam lives here: one
    function, easy to read, easy to delete when the contract carries every
    field directly. Anything the pipeline does not yet publish is derived from
-   the ring and declared in `caveats`, so a modelled value never passes for a
+   the ring and declared in `caveats`, so a modeled value never passes for a
    measured one. */
 function localeFromRecord(p){
   const b = BANDS[p.ring] || BANDS[2];
@@ -820,10 +883,112 @@ async function loadData(){
     built_at: payload.built_at,
     count: payload.place_count,
     warnings: payload.warnings || [],
-    failures: payload.stage_failures || {}
+    failures: payload.stage_failures || {},
+    sources: payload.sources || [],
+    withheld: payload.withheld || []
   };
   LOCALES = payload.places.map(localeFromRecord);
   LOCALES.forEach(L=>{ L.crimeIdx = L.crimeIdx ?? null; });
+}
+
+/* ---------- the answer, kept reachable ---------- */
+
+/* Built from whatever cards are in the panel rather than a hand-kept list, so
+   adding a group of inputs cannot leave the rail quietly out of date. */
+function buildRail(){
+  const rail=$("#rail"); if(!rail) return;
+  const cards=[...document.querySelectorAll(".panel .card")];
+  const links=cards.map((card,i)=>{
+    const h=card.querySelector("h2");
+    if(!h) return "";
+    if(!card.id) card.id="sec-"+i;
+    /* data-rail carries a short label where the heading is a sentence. Falls
+       back to the heading itself, so a new card still appears in the rail
+       without anyone remembering to name it. Trimming the heading with a
+       regex was worse: "Where you are in life" came out as "you are in life". */
+    const label=card.dataset.rail||h.textContent.replace(/\?$/,"");
+    return `<a href="#${card.id}" data-sec="${card.id}">${esc(label)}</a>`;
+  });
+  rail.innerHTML=links.join("");
+
+  /* Marks where you are. rootMargin pulls the trigger line near the top of the
+     scroller so a section counts as current when it reaches the rail, not when
+     it happens to cross the middle of the screen. */
+  const marks=[...rail.querySelectorAll("a")];
+  if(!marks.length) return;
+  /* Start on the first section so the rail always shows a position. Without
+     this it reads as "nowhere" until the first scroll, and on a short viewport
+     that can be never. */
+  marks[0].setAttribute("aria-current","true");
+  if(!("IntersectionObserver" in window)) return;
+  const seen=new Map();
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(e=>seen.set(e.target.id,e.intersectionRatio));
+    let best=null,bestRatio=-1;
+    seen.forEach((ratio,id)=>{ if(ratio>bestRatio){bestRatio=ratio;best=id;} });
+    marks.forEach(a=>a.setAttribute("aria-current",String(a.dataset.sec===best&&bestRatio>0)));
+  },{root:$(".panel"),rootMargin:"-8px 0px -70% 0px",threshold:[0,.25,.5,1]});
+  cards.forEach(c=>{ if(c.id) io.observe(c); });
+}
+
+/* Shows the leader once one exists. Hidden when nothing clears the filters,
+   because a bar promising a top match above an empty list is worse than no
+   bar at all. */
+function updateResultsBar(top,total){
+  const bar=$("#resbar"); if(!bar) return;
+  if(!top){
+    bar.hidden=true;
+    document.documentElement.classList.remove("has-bar");
+    return;
+  }
+  /* title already carries the state, because the anchor name does. Appending
+     L.a.st gave "Rural, near Plainview, TX, TX". */
+  $("#resbar-name").textContent=top.L.title;
+  $("#resbar-fit").textContent="fit "+Math.round(top.fit)+
+    (total?" · "+total.toLocaleString()+" match":"");
+  bar.hidden=false;
+  document.documentElement.classList.add("has-bar");
+}
+
+/* Which pipeline stage each source feeds, so a stage that failed can be shown
+   as failed against the source that failed with it. Kept here rather than in
+   the data because it is an editorial mapping, and a wrong entry costs a label
+   rather than a number. */
+const SOURCE_STAGE=[
+  [/crime data explorer|fbi/i,        "crime"],
+  [/election data and science|medsl/i,"politics"],
+  [/common core of data|nces/i,       "schools"],
+  [/fair market rents|hud/i,          "housing"],
+  [/national risk index|fema/i,       "hazard"],
+  [/climate normals|noaa/i,           "climate"],
+  [/air quality|epa/i,                "air"],
+  [/shortage areas|hrsa/i,            "health"],
+  [/unemployment|bls/i,               "labour"],
+  [/price parities|bea/i,             "rpp"],
+  [/zillow/i,                         "housing"],
+];
+
+function renderSources(){
+  const body=$("#srcbody");
+  if(!body || !DATA_META) return;
+  const failed=DATA_META.failures||{};
+  const rows=(DATA_META.sources||[]).map(s=>{
+    const hit=SOURCE_STAGE.find(([re])=>re.test(s.name||""));
+    const stage=hit?hit[1]:null;
+    const down=stage&&failed[stage];
+    /* An unverified source is one the pipeline has never successfully
+       exercised, which is a different thing from one that failed today. */
+    const state=down ? ["no","not available"]
+              : s.verified===false ? ["part","unverified"]
+              : ["yes","in use"];
+    const lic=s.redistributable===false?"lic rs":"lic ok";
+    return `<tr><td>${esc(s.name)}</td><td>${esc(s.cadence||"")}</td>`+
+           `<td class="${lic}">${esc(s.license||"")}`+
+           `${s.attribution_required?' <span class="mono" style="font-size:11px">attribution</span>':""}</td>`+
+           `<td class="src-${state[0]}">${state[1]}</td></tr>`;
+  });
+  body.innerHTML=rows.join("")||
+    `<tr><td colspan="4">No source list published with this build.</td></tr>`;
 }
 
 /* ---------- factors ---------- */
@@ -1132,6 +1297,10 @@ function signature(r,s){
 
 /* ---------- render ---------- */
 const $=q=>document.querySelector(q);
+/* Source names and licenses arrive from the built file rather than being
+   written into the page, so they are escaped on the way in. */
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>(
+  {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=n=>(n<0?"−$":"$")+Math.abs(Math.round(n)).toLocaleString("en-US");
 /* A rate with its comparison to the national figure, or an honest gap.
    Written because null < 300 is true in JavaScript, so a county with no
@@ -1200,15 +1369,17 @@ function render(){
   $("#headline").textContent=any?"Where should you choose to live?":"Rate at least one thing that matters.";
 
   if(!res.length){
+    updateResultsBar(null);
     $("#rows").innerHTML=`<div class="empty"><b>Nothing clears those filters.</b>
       Try loosening the lot minimum, the drive-time limit or the price ceiling; the ranking will come straight back.</div>`;
     return;
   }
+  updateResultsBar(any?res[0]:null,res.length);
 
   $("#rows").innerHTML=visible.map((r,i)=>{
     const L=r.L,lo=r.econ.leftover,chips=weakChips(r,state);
     const budget=lo<0?`<span class="warn">${money(-lo)}/yr short</span>`:`${money(lo)}/yr left over`;
-    const sub=`${L.a.st} · ${acres(L.lot)} · ${L.commute} min to centre · ${budget}`
+    const sub=`${L.a.st} · ${acres(L.lot)} · ${L.commute} min to center · ${budget}`
       +(chips.length?` · <span class="warn">weak: ${chips.map(c=>c.label.toLowerCase()).join(", ")}</span>`:"");
     return `<button class="row" data-id="${L.id}" aria-current="${state.open===L.id}" style="animation-delay:${Math.min(i*14,300)}ms">
       <span class="rank ${i<3?"top":""}">${String(i+1).padStart(2,"0")}</span>
@@ -1323,7 +1494,7 @@ function fillSheet(r,rank,total){
         <dt>Violent crime, per 100,000</dt><dd>${rate(L.v.violent,420,300)}</dd>
         <dt>Property crime, per 100,000</dt><dd>${rate(L.v.property,2200,1600)}</dd>
       </dl>
-      <p class="note">Crime falls steeply from the core outward, then flattens; rural rates are not uniformly the lowest. Reported offences only, and reporting coverage varies by agency.</p>
+      <p class="note">Crime falls steeply from the core outward, then flattens; rural rates are not uniformly the lowest. Reported offenses only, and reporting coverage varies by agency.</p>
     </div>
 
     <div class="card">
@@ -1347,7 +1518,7 @@ function fillSheet(r,rank,total){
         <dt>Typical home value</dt><dd>${money(L.homeK*1000)}</dd>
         <dt>Typical home size</dt><dd>${L.sqft.toLocaleString()} sq ft</dd>
         <dt>Typical lot</dt><dd>${acres(L.lot)}</dd>
-        <dt>Drive to the city centre</dt><dd>${L.commute} min</dd>
+        <dt>Drive to the city center</dt><dd>${L.commute} min</dd>
         <dt>Summer daytime high</dt><dd>${L.sumHigh}°F</dd>
         <dt>Winter nighttime low</dt><dd>${L.winLow}°F</dd>
         <dt>Typical 2-bed rent</dt><dd>${money(L.rent)}/mo</dd>
@@ -1357,7 +1528,7 @@ function fillSheet(r,rank,total){
     <div class="card">
       <span class="label">How it scores, factor by factor</span>
       <div style="margin-top:12px">${rows}</div>
-      <p class="note">Each bar is this place's percentile against the other ${LOCALES.length-1}. The centre line is the median.</p>
+      <p class="note">Each bar is this place's percentile against the other ${LOCALES.length-1}. The center line is the median.</p>
     </div>
 
     ${L.caveats && L.caveats.length ? `<div class="card">
@@ -1365,7 +1536,7 @@ function fillSheet(r,rank,total){
       <ul style="margin:10px 0 0;padding-left:18px;font-size:12.5px;color:var(--on-var);line-height:1.6">
         ${L.caveats.map(c=>`<li>${c}</li>`).join("")}
       </ul>
-      <p class="note">Carried through from the pipeline. A modelled value and a measured one are not the same thing, so the record says which is which.</p>
+      <p class="note">Carried through from the pipeline. A modeled value and a measured one are not the same thing, so the record says which is which.</p>
     </div>` : ""}
 
     <div class="card">
@@ -1420,6 +1591,8 @@ async function boot(){
   $("#vintage").textContent=`${DATA_META.count.toLocaleString()} places · built ${when}`;
   const seedy=(DATA_META.warnings||[]).some(w=>/seed/i.test(w.message||""));
   if(!seedy) document.querySelector(".notice").remove();
+  renderSources();
+  buildRail();
   render();
 }
 

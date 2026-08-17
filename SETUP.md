@@ -95,7 +95,7 @@ sh scripts/sync-to-sullinslabs.sh            # dry run, shows what differs
 sh scripts/sync-to-sullinslabs.sh --apply    # copy
 ```
 
-The script refuses to run in the other direction, normalises line endings to
+The script refuses to run in the other direction, normalizes line endings to
 LF to match what is committed in the sullinslabs repo, and reports the files
 that actually differ so a routine data-only run does not touch the markup.
 Publishing stays a separate, deliberate step.

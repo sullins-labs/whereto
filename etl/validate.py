@@ -13,7 +13,7 @@ from dataclasses import dataclass
 BLOCKING, WARNING = "blocking", "warning"
 
 # Below this share of a county's population covered by reporting agencies, an
-# FBI crime figure is not a rate, it is an artefact of who filed paperwork.
+# FBI crime figure is not a rate, it is an artifact of who filed paperwork.
 CRIME_COVERAGE_FLOOR = 0.80
 
 # Plausibility envelopes. Wide on purpose: these catch unit errors, sign flips
