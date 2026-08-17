@@ -65,6 +65,17 @@ CYCLES = (2020, 2024)
 # signed URL to GET instead. That signed URL, not the bare datafile id, is
 # what actually varies run to run, so it is resolved fresh here rather than
 # stored in config.py as a URL.
+# Dataverse's deposit record badges this file CC0 1.0; config.py still
+# classifies it CC BY-NC, redistributable=False, per MEDSL's own stated
+# terms, and that is deliberate. The two badges answer different questions:
+# CC0 is a Dataverse platform default on the deposit record, not a MEDSL
+# statement about the data. The stricter reading costs nothing to keep,
+# since this module only derives lean values and never republishes the
+# file, and it would unlock nothing anyway, since Open-Meteo and the MIT
+# Living Wage Calculator are already non-commercial-only. A depositor
+# gating the file behind a mandatory guestbook is not treating it as
+# unrestricted. Only a direct answer from MEDSL changes this, not the
+# deposit badge. Decided 2026-08-17; do not flip on the CC0 badge alone.
 MIT_GUESTBOOK_RESPONSE = {
     "name": "WhereToLive ETL",
     "email": "support@sullinslabs.com",
