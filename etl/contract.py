@@ -69,7 +69,9 @@ PLACE_FIELDS: dict[str, tuple[type | tuple, bool, str]] = {
     "grant_aid_per_student": ((int, float), False, ""),
     "medicaid_expansion":  (bool, False, ""),
     "paid_family_leave":   (bool, False, ""),
-    "senior_property_relief": ((int, float), False, ""),
+    "senior_property_relief_pct": ((int, float), False,
+                                   "share of the county property tax bill a "
+                                   "qualifying senior household avoids, 0 to 1"),
 
     "caveats":         (list,  False, "what this record does not know, shown in the interface"),
 }

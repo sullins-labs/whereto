@@ -712,7 +712,7 @@ function localeFromRecord(p){
       preK: p.prek_coverage_pct ?? 0, tuition: p.tuition_instate ?? 11200,
       grantAid: p.grant_aid_per_student ?? 0,
       medicaid: p.medicaid_expansion ? 1 : 0, leave: p.paid_family_leave ? 1 : 0,
-      seniorBreak: p.senior_property_relief ?? 0,
+      seniorBreak: p.senior_property_relief_pct ?? 0,
       hazTrend: p.hazard_trend ?? p.hazard_score ?? 30
     },
     b,
@@ -907,7 +907,7 @@ const RETIRE_NOTE=["No state income tax at all",
    makes you buy pre-K, community college and a second car privately can cost
    a household more than a high-tax state that supplies them. Every line here
    is money this household would otherwise spend, not a general public good. */
-function publicValue(L,s,gross){
+function publicValue(L,s,gross,propTax){
   const a=L.a, v={};
   /* roughly two of eighteen childhood years fall in the pre-K window */
   v.prek   = s.kids*(2/18)*11500*(a.preK/100);
@@ -922,7 +922,14 @@ function publicValue(L,s,gross){
      cars while charging for petrol counts the same money twice. */
   v.transit= s.adults>1 ? Math.max(0,Math.min(1,(L.v.walk-58)/38))*10500 : 0;
   v.leave  = s.phase==="kids" ? a.leave*1800 : 0;
-  v.senior = s.phase==="retired" ? a.seniorBreak/100*2600 : 0;
+  /* A share of this county's actual property tax bill, not a share of a flat
+     national figure. Relief is worth what the tax is worth, so a freeze in a
+     high-tax county is worth several times the same freeze in a low-tax one,
+     and the old constant flattened exactly that difference away. Renters get
+     nothing because propTax is zero for them, which was the other half of the
+     mistake: the previous version credited property tax relief to households
+     that pay no property tax. */
+  v.senior = s.phase==="retired" ? (propTax||0)*a.seniorBreak : 0;
   v.total  = v.prek+v.college+v.health+v.transit+v.leave+v.senior;
   return v;
 }
@@ -976,7 +983,7 @@ function economics(L,s){
   const living=baseLiving+pets+driving+salesTax;
 
   const stateLocalTax=stateInc+propTax+salesTax;
-  const pub=publicValue(L,s,gross);
+  const pub=publicValue(L,s,gross,propTax);
   const netGov=stateLocalTax-pub.total;
   const net=gross-fed-stateInc;
   return {retired,people,wageIndex,gross,fedGross,childCredit,fed,stateInc,propTax,insurance,salesTax,

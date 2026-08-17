@@ -50,7 +50,12 @@ def extract(county_state: dict[str, str]) -> dict[str, dict]:
                 "grant_aid_per_student": s["grant_aid_per_student"],
                 "medicaid_expansion": s["medicaid_expansion"],
                 "paid_family_leave": s["paid_family_leave"],
-                "senior_property_relief": s["senior_property_relief"],
+                # Renamed with its units, because the meaning changed from an
+                # index out of 100 to a share of the local property tax bill.
+                # An old reader meeting a new file now sees a missing field and
+                # credits nothing, rather than reading 0.25 as an index and
+                # quietly under-crediting by a factor of a hundred.
+                "senior_property_relief_pct": s["senior_property_relief_pct"],
             })
         if rec:
             out[fips] = rec

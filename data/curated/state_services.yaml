@@ -1,57 +1,428 @@
 # What a state hands back. Only services a household would otherwise buy
-# privately are listed — roads, parks and public safety are real and valuable
+# privately are listed: roads, parks and public safety are real and valuable
 # but are not an avoided invoice, and counting them would let this file be
 # tuned to any conclusion.
+#
+# Two fields are deliberately zero everywhere. See review_notes; they are gaps
+# that are declared rather than filled with plausible numbers.
 meta:
   as_of: 2026-01-01
+  reviewed_by: manual
   sources:
-    - "NIEER, The State of Preschool yearbook"
-    - "IPEDS, in-state tuition and fees, public four-year"
-    - "NASSGAP, survey of state-funded student financial aid"
-    - "KFF, status of state Medicaid expansion decisions"
-    - "State statutes, paid family and medical leave programmes"
-    - "Lincoln Institute, significant features of the property tax"
+    - "NIEER, The State of Preschool 2024 yearbook, percent of 4-year-olds enrolled in state-funded preschool, 2023-24 school year"
+    - "NCES/IPEDS via Education Data Initiative, average published in-state tuition and fees, public four-year, AY 2025-26"
+    - "KFF, status of state action on the Medicaid expansion decision"
+    - "State statutes establishing paid family and medical leave programmes"
+  review_notes: >-
+    prek_coverage_pct and tuition_instate are transcribed from the two tables
+    named above and cover all 51 jurisdictions at one vintage each.
+    medicaid_expansion and paid_family_leave are binary facts about statute.
+    Paid leave is recorded as whether benefits are actually payable during
+    2026, not whether a law has been passed, because a programme still phasing
+    in pays a household nothing. Maryland has enacted a programme whose
+    benefits do not begin in 2026, so it is recorded false.
+
+    grant_aid_per_student and senior_property_relief_pct are zero for every
+    state, and that is a decision rather than an oversight.
+
+    State grant aid per student would need NASSGAP's survey read state by
+    state. Filling in only the states with famous programmes would be worse
+    than filling in none: this tool compares places, so a bias applied evenly
+    cancels out and a bias applied to the states someone happened to remember
+    does not.
+
+    Senior property tax relief is worse still. Every state offers something,
+    but the programmes are income-tested at thresholds low enough that the
+    typical retired household in this model may not qualify at all
+    (Pennsylvania cuts off at $35,000, Utah at $44,221), and they are
+    structured four different ways. A single fraction per state would misstate
+    both who qualifies and by how much. The mechanism that consumes it has
+    been corrected in the meantime, so the numbers can be filled in later
+    without touching the model.
 
 states:
-  PA:
-    prek_coverage_pct: 20
-    tuition_instate: 17000
-    grant_aid_per_student: 1400
-    medicaid_expansion: true
-    paid_family_leave: false
-    senior_property_relief: 65
-  NY:
-    prek_coverage_pct: 55
-    tuition_instate: 9000
-    grant_aid_per_student: 1100
-    medicaid_expansion: true
-    paid_family_leave: true
-    senior_property_relief: 60
-  TN:
-    prek_coverage_pct: 25
-    tuition_instate: 11600
-    grant_aid_per_student: 1400
+  AL:
+    prek_coverage_pct: 41
+    tuition_instate: 12736
+    grant_aid_per_student: 0
     medicaid_expansion: false
     paid_family_leave: false
-    senior_property_relief: 40
+    senior_property_relief_pct: 0.0
+  AK:
+    prek_coverage_pct: 10
+    tuition_instate: 9215
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  AZ:
+    prek_coverage_pct: 4
+    tuition_instate: 13392
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  AR:
+    prek_coverage_pct: 32
+    tuition_instate: 9778
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
   CA:
-    prek_coverage_pct: 35
-    tuition_instate: 11000
-    grant_aid_per_student: 2400
+    prek_coverage_pct: 48
+    tuition_instate: 9310
+    grant_aid_per_student: 0
     medicaid_expansion: true
     paid_family_leave: true
-    senior_property_relief: 45
-  WA:
-    prek_coverage_pct: 15
-    tuition_instate: 12600
-    grant_aid_per_student: 1300
+    senior_property_relief_pct: 0.0
+  CO:
+    prek_coverage_pct: 70
+    tuition_instate: 10894
+    grant_aid_per_student: 0
     medicaid_expansion: true
     paid_family_leave: true
-    senior_property_relief: 55
+    senior_property_relief_pct: 0.0
+  CT:
+    prek_coverage_pct: 13
+    tuition_instate: 18240
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief_pct: 0.0
+  DE:
+    prek_coverage_pct: 8
+    tuition_instate: 12713
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief_pct: 0.0
+  DC:
+    prek_coverage_pct: 95
+    tuition_instate: 6348
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief_pct: 0.0
+    note: >-
+      The highest preschool enrolment in the country by a wide margin, and
+      effectively universal. For a household with a four-year-old this is the
+      largest single service difference in the file.
   FL:
-    prek_coverage_pct: 75
-    tuition_instate: 6400
-    grant_aid_per_student: 1000
+    prek_coverage_pct: 65
+    tuition_instate: 4836
+    grant_aid_per_student: 0
     medicaid_expansion: false
     paid_family_leave: false
-    senior_property_relief: 55
+    senior_property_relief_pct: 0.0
+    note: >-
+      The cheapest public tuition in the country alongside high preschool
+      enrolment, against no Medicaid expansion. Which way that nets depends
+      almost entirely on the household's age and insurance.
+  GA:
+    prek_coverage_pct: 55
+    tuition_instate: 7723
+    grant_aid_per_student: 0
+    medicaid_expansion: false
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  HI:
+    prek_coverage_pct: 5
+    tuition_instate: 11951
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  ID:
+    prek_coverage_pct: 0
+    tuition_instate: 8471
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+    note: "No state-funded preschool programme."
+  IL:
+    prek_coverage_pct: 35
+    tuition_instate: 16202
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  IN:
+    prek_coverage_pct: 0
+    tuition_instate: 10601
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+    note: >-
+      Not listed in the NIEER access table for 2023-24; recorded as 0 rather
+      than guessed at.
+  IA:
+    prek_coverage_pct: 67
+    tuition_instate: 11127
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  KS:
+    prek_coverage_pct: 45
+    tuition_instate: 10234
+    grant_aid_per_student: 0
+    medicaid_expansion: false
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  KY:
+    prek_coverage_pct: 27
+    tuition_instate: 12551
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  LA:
+    prek_coverage_pct: 34
+    tuition_instate: 11927
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  ME:
+    prek_coverage_pct: 47
+    tuition_instate: 11429
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief_pct: 0.0
+  MD:
+    prek_coverage_pct: 38
+    tuition_instate: 10800
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+    note: >-
+      A paid family leave programme is enacted but benefits are not payable
+      during 2026, so it is recorded false. A household cannot spend a
+      programme that has not started.
+  MA:
+    prek_coverage_pct: 30
+    tuition_instate: 15885
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief_pct: 0.0
+  MI:
+    prek_coverage_pct: 37
+    tuition_instate: 16229
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  MN:
+    prek_coverage_pct: 11
+    tuition_instate: 14081
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief_pct: 0.0
+  MS:
+    prek_coverage_pct: 20
+    tuition_instate: 10455
+    grant_aid_per_student: 0
+    medicaid_expansion: false
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  MO:
+    prek_coverage_pct: 10
+    tuition_instate: 10743
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  MT:
+    prek_coverage_pct: 0
+    tuition_instate: 7755
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+    note: "No state-funded preschool programme."
+  NE:
+    prek_coverage_pct: 34
+    tuition_instate: 9613
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  NV:
+    prek_coverage_pct: 9
+    tuition_instate: 7786
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  NH:
+    prek_coverage_pct: 0
+    tuition_instate: 18839
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+    note: >-
+      No state preschool programme and among the most expensive public tuition
+      in the country, which is the other side of having no income or sales tax.
+  NJ:
+    prek_coverage_pct: 34
+    tuition_instate: 16577
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief_pct: 0.0
+  NM:
+    prek_coverage_pct: 51
+    tuition_instate: 8408
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  NY:
+    prek_coverage_pct: 56
+    tuition_instate: 9415
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief_pct: 0.0
+  NC:
+    prek_coverage_pct: 22
+    tuition_instate: 8175
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  ND:
+    prek_coverage_pct: 9
+    tuition_instate: 10889
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  OH:
+    prek_coverage_pct: 15
+    tuition_instate: 11716
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  OK:
+    prek_coverage_pct: 66
+    tuition_instate: 9654
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+    note: >-
+      One of the oldest universal preschool programmes in the country, which is
+      why a state with otherwise modest public spending ranks near the top here.
+  OR:
+    prek_coverage_pct: 17
+    tuition_instate: 14210
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief_pct: 0.0
+  PA:
+    prek_coverage_pct: 26
+    tuition_instate: 17909
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  RI:
+    prek_coverage_pct: 22
+    tuition_instate: 16772
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief_pct: 0.0
+  SC:
+    prek_coverage_pct: 45
+    tuition_instate: 13474
+    grant_aid_per_student: 0
+    medicaid_expansion: false
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  SD:
+    prek_coverage_pct: 0
+    tuition_instate: 9941
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+    note: "No state-funded preschool programme."
+  TN:
+    prek_coverage_pct: 20
+    tuition_instate: 11837
+    grant_aid_per_student: 0
+    medicaid_expansion: false
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  TX:
+    prek_coverage_pct: 52
+    tuition_instate: 8692
+    grant_aid_per_student: 0
+    medicaid_expansion: false
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  UT:
+    prek_coverage_pct: 3
+    tuition_instate: 8032
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  VT:
+    prek_coverage_pct: 76
+    tuition_instate: 19223
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+    note: >-
+      The most expensive public tuition in the country alongside near-universal
+      preschool. The state pays for small children and charges for large ones.
+  VA:
+    prek_coverage_pct: 22
+    tuition_instate: 17196
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  WA:
+    prek_coverage_pct: 17
+    tuition_instate: 8547
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: true
+    senior_property_relief_pct: 0.0
+  WV:
+    prek_coverage_pct: 67
+    tuition_instate: 9954
+    grant_aid_per_student: 0
+    medicaid_expansion: true
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  WI:
+    prek_coverage_pct: 63
+    tuition_instate: 9515
+    grant_aid_per_student: 0
+    medicaid_expansion: false
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+  WY:
+    prek_coverage_pct: 0
+    tuition_instate: 5695
+    grant_aid_per_student: 0
+    medicaid_expansion: false
+    paid_family_leave: false
+    senior_property_relief_pct: 0.0
+    note: "No state-funded preschool programme."
