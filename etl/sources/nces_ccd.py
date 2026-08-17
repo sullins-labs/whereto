@@ -67,30 +67,46 @@ def aggregate(districts: list[dict], crosswalk: list[dict]) -> dict[str, dict]:
 
 
 def extract() -> dict[str, dict]:
-    path = fetch("nces_ccd", filename="ccd_lea_finance.zip")
+    path = fetch("nces_ccd", filename="sdf_lea_finance.zip")
     districts, crosswalk = [], []
     with zipfile.ZipFile(path) as z:
         for name in z.namelist():
-            if not name.lower().endswith(".csv"):
+            # The F-33 release ships one tab-delimited .txt, not a .csv. Looking
+            # only for .csv found nothing in a zip that opened perfectly well.
+            if not name.lower().endswith((".csv", ".txt")):
                 continue
             text = z.read(name).decode("utf-8-sig", errors="replace")
-            rows = list(csv.DictReader(io.StringIO(text)))
+            head = text.split("\n", 1)[0]
+            delim = "\t" if head.count("\t") > head.count(",") else ","
+            rows = list(csv.DictReader(io.StringIO(text), delimiter=delim))
             if not rows:
                 continue
             cols = set(rows[0])
+
             if {"LEAID", "TOTALEXP"} <= cols:
                 for r in rows:
                     districts.append({
                         "leaid": r["LEAID"],
                         "enrolment": _num(r.get("V33") or r.get("MEMBER")),
                         "total_expenditure": _num(r.get("TOTALEXP")),
+                        # F-33 is a finance collection and carries no teacher
+                        # count, so pupils_per_teacher stays null rather than
+                        # being invented from a ratio somewhere else.
                         "teachers": _num(r.get("TOTTCH") or r.get("TEACHERS")),
                     })
-            elif {"LEAID", "CNTY"} <= cols:
+
+            # The county code is CONUM here and CNTY in the LEA universe file.
+            # Both name the same thing, and in this release it travels in the
+            # same file as the finance columns, so one fetch covers both halves.
+            county_col = "CONUM" if "CONUM" in cols else "CNTY" if "CNTY" in cols else None
+            if county_col and "LEAID" in cols:
                 for r in rows:
+                    enrol = _num(r.get("V33") or r.get("MEMBER")) or 0
                     crosswalk.append({
                         "leaid": r["LEAID"],
-                        "county_fips": (r.get("CNTY") or "").zfill(5),
-                        "students_in_county": _num(r.get("MEMBER")) or 0,
+                        "county_fips": (r.get(county_col) or "").strip().zfill(5),
+                        # A district sits in one county here, so its whole roll
+                        # counts toward that county and the share works out to 1.
+                        "students_in_county": enrol,
                     })
     return aggregate(districts, crosswalk)

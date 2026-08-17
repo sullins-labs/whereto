@@ -32,6 +32,13 @@ BOUNDS = {
     "property_per_100k":   (0, 15_000),
     "insurance_rate":      (0.001, 0.05),
     "drive_min":           (2, 240),
+    # Deliberately wide at the top. Property-rich, student-poor districts are
+    # real: McMullen County in Texas spends over $140,000 a pupil across 283
+    # pupils, and Alpine County in California has 61 pupils in total. A tighter
+    # ceiling would reject the country as it is rather than catch a mistake.
+    # This is here to catch a figure in thousands or a whole-district total
+    # mistaken for a per-pupil one.
+    "spend_per_pupil":     (3_000, 250_000),
 }
 
 REQUIRED = [
