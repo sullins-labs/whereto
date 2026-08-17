@@ -145,6 +145,40 @@ def verify() -> list[str]:
     return problems
 
 
+def _redact(text: str, token: str | None) -> str:
+    """Keep the key out of anything that gets printed or logged.
+
+    requests puts the full URL, query string included, into HTTPError. A failing
+    keyed source therefore prints the key straight into the build output, which
+    is the one artefact most likely to be pasted into an issue or captured by
+    CI. The failure still needs to name the URL, so redact rather than suppress.
+    """
+    return text.replace(token, "<redacted>") if token else text
+
+
+def _wrong_shape(name: str, body: bytes) -> str | None:
+    """Why this response is not the file we asked for, or None if it looks right.
+
+    A 200 is not evidence of a good download. Three sources proved that on the
+    first cold build: FEMA answered a zip request with an HTML landing page,
+    HUD and MIT each answered with zero bytes. All three archived cleanly, with
+    honest checksums over the wrong content, and surfaced much later as a
+    BadZipFile or an empty parse. An archive whose whole promise is integrity
+    should refuse the bytes rather than preserve them faithfully.
+    """
+    if not body:
+        return "empty response"
+    head = body[:512].lstrip()[:64].lower()
+    looks_html = head.startswith(b"<!doctype html") or head.startswith(b"<html")
+    if name.endswith((".zip", ".xlsx")):
+        # Both are zip containers, so both must start with the local file header.
+        if not body.startswith(b"PK"):
+            return "HTML page, not an archive" if looks_html else "not a zip archive"
+    elif name.endswith((".csv", ".json")) and looks_html:
+        return "HTML page, not data"
+    return None
+
+
 def fetch(
     source_key: str,
     url: str | None = None,
@@ -186,6 +220,7 @@ def fetch(
     LIMITER.check(src)
 
     hdrs = {"User-Agent": USER_AGENT, **(headers or {})}
+    token = None
     if src.needs_key:
         token = os.environ.get(src.needs_key)
         if not token:
@@ -193,13 +228,12 @@ def fetch(
                 f"{source_key} needs {src.needs_key} in the environment. "
                 f"All of these keys are free; see README."
             )
-        if source_key == "hud_fmr":
+        if src.key_style == "bearer":
             hdrs["Authorization"] = f"Bearer {token}"
-        elif json_body is not None:
-            # BLS calls it registrationkey and wants it in the body.
-            json_body = {**json_body, "registrationkey": token}
+        elif src.key_style == "body":
+            json_body = {**(json_body or {}), src.key_param: token}
         else:
-            params = {**(params or {}), "key": token}
+            params = {**(params or {}), src.key_param: token}
 
     outdir = RAW / source_key / _today()
     outdir.mkdir(parents=True, exist_ok=True)
@@ -219,18 +253,28 @@ def fetch(
             if r.status_code == 429:
                 raise requests.HTTPError("rate limited")
             r.raise_for_status()
+            wrong = _wrong_shape(name, r.content)
+            if wrong:
+                # Checked before writing: archiving it would record a valid
+                # checksum over the wrong bytes and read as a good snapshot.
+                raise RuntimeError(f"{_redact(url, token)} returned {wrong}")
             path.write_bytes(r.content)
             break
         except Exception as exc:            # noqa: BLE001 - retried below
             last_error = exc
             time.sleep(2 ** attempt)
     else:
-        raise RuntimeError(f"{source_key}: fetch failed after 4 attempts: {last_error}")
+        raise RuntimeError(
+            f"{source_key}: fetch failed after 4 attempts: "
+            f"{_redact(str(last_error), token)}")
 
     LIMITER.spend(src)
     _record(Entry(
         source=source_key,
-        url=r.url,
+        # Redacted: requests resolves params into r.url, so a keyed source
+        # would write its key into the manifest, which is the one file here
+        # meant to be durable and inspectable.
+        url=_redact(r.url, token),
         path=str(path),
         sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
         bytes=path.stat().st_size,
