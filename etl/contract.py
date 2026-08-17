@@ -57,7 +57,12 @@ PLACE_FIELDS: dict[str, tuple[type | tuple, bool, str]] = {
 
     "income_top_rate":     ((int, float), False, ""),
     "sales_combined":      ((int, float), False, ""),
-    "property_effective":  ((int, float), False, ""),
+    "median_real_estate_taxes": ((int, float), False,
+                                 "ACS median paid, owner-occupied; the numerator "
+                                 "of property_effective, published so the rate "
+                                 "can be checked rather than taken on trust"),
+    "property_effective":  ((int, float), False,
+                            "taxes paid over home value, per county, from ACS"),
     "retire_code":         (int,  False, "0 none | 1 exempts all | 2 exempts SS | 3 taxes part of SS"),
     "prek_coverage_pct":   ((int, float), False, ""),
     "tuition_instate":     ((int, float), False, ""),
