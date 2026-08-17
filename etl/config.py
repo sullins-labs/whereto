@@ -34,6 +34,12 @@ class Source:
     # this: a restricted source may not appear verbatim in the output.
     redistributable: bool
     needs_key: str | None = None       # env var holding the API key
+    # What the API calls its key, because no two of them agree. Getting this
+    # wrong is not a 401: BEA answers 200 with an empty body and BLS answers
+    # 200 with a per-series "does not exist", both of which read downstream as
+    # "the source had no data for you" rather than "you failed to authenticate".
+    key_param: str = "key"
+    key_style: str = "query"           # query | body | bearer
     daily_call_cap: int | None = None  # hard cap the fetcher will not exceed
     notes: str = ""
     params: dict = field(default_factory=dict)
@@ -74,7 +80,10 @@ register(Source(
 register(Source(
     key="usda_rucc",
     name="USDA ERS Rural-Urban Continuum Codes",
-    url="https://www.ers.usda.gov/media/allrfjb2/ruralurbancontinuumcodes2023.csv",
+    # ERS reorganised its media paths; the old allrfjb2 slug now 404s. Long
+    # format, FIPS/State/County_Name/Attribute/Value, RUCC_2023 as an
+    # Attribute row, which is the shape geo._rucc already reads.
+    url="https://www.ers.usda.gov/media/5768/2023-rural-urban-continuum-codes.csv",
     cadence="decennial", licence="Public domain", redistributable=True,
     notes=(
         "Nine-level county classification from 'metro, 1m+' down to 'rural, "
@@ -113,6 +122,8 @@ register(Source(
     url="https://apps.bea.gov/api/data",
     cadence="annual", licence="Public domain", redistributable=True,
     needs_key="BEA_API_KEY",
+    key_param="UserID",   # verified: "key" returns 200 with a zero-byte body
+
     params={"TableName": "MARPP", "LineCode": 1, "GeoFips": "MSA"},
     notes="Cost of living by metro, indexed to the national level = 100.",
 ))
@@ -123,6 +134,8 @@ register(Source(
     url="https://api.bls.gov/publicAPI/v2/timeseries/data/",
     cadence="monthly", licence="Public domain", redistributable=True,
     needs_key="BLS_API_KEY",
+    key_param="registrationkey", key_style="body",   # v2 rejects GET with 405
+
     daily_call_cap=450,   # registered ceiling is 500/day; leave headroom
     params={"series_per_call": 50},
     notes=(
@@ -140,6 +153,8 @@ register(Source(
     url="https://www.huduser.gov/hudapi/public/fmr/data/{fips}",
     cadence="annual", licence="Public domain", redistributable=True,
     needs_key="HUD_API_TOKEN",
+    key_style="bearer",
+
     notes="Effective 1 October each year; published August-September.",
 ))
 
