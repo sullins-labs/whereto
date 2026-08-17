@@ -26,6 +26,7 @@ import hashlib
 import json
 import os
 import time
+import dataclasses
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -48,13 +49,13 @@ class Entry:
     fetched_at: str
     vintage: str | None = None
     note: str = ""
-    # Carried per fetch so the archive answers licence questions on its own,
+    # Carried per fetch so the archive answers license questions on its own,
     # without anyone having to line it up against whatever config.py says
     # today. role in particular is what makes a validation-only source
     # identifiable years later.
     role: str = "primary"
-    licence: str = ""
-    licence_verified: str | None = None
+    license: str = ""
+    license_verified: str | None = None
     redistributable: bool = True
     attribution_required: bool = False
 
@@ -108,10 +109,30 @@ def _record(entry: Entry) -> None:
         fh.write(json.dumps(asdict(entry)) + "\n")
 
 
+# Field names that have changed since entries were first written. The manifest
+# is append-only, so every rename leaves older lines behind in the old shape and
+# the reader has to keep understanding them. An archive that cannot read its own
+# history is not an archive.
+LEGACY_FIELDS = {"licence": "license", "licence_verified": "license_verified"}
+
+
+def _entry_from(record: dict) -> Entry:
+    fields = {f.name for f in dataclasses.fields(Entry)}
+    out = {}
+    for k, v in record.items():
+        k = LEGACY_FIELDS.get(k, k)
+        # Unknown keys are dropped rather than raising: a future version adding
+        # a field should not make today's build unable to read the archive.
+        if k in fields:
+            out[k] = v
+    return Entry(**out)
+
+
 def manifest() -> list[Entry]:
     if not MANIFEST.exists():
         return []
-    return [Entry(**json.loads(l)) for l in MANIFEST.read_text().splitlines() if l.strip()]
+    return [_entry_from(json.loads(l))
+            for l in MANIFEST.read_text().splitlines() if l.strip()]
 
 
 def latest(source_key: str, on_or_before: str | None = None,
@@ -159,7 +180,7 @@ def _redact(text: str, token: str | None) -> str:
 
     requests puts the full URL, query string included, into HTTPError. A failing
     keyed source therefore prints the key straight into the build output, which
-    is the one artefact most likely to be pasted into an issue or captured by
+    is the one artifact most likely to be pasted into an issue or captured by
     CI. The failure still needs to name the URL, so redact rather than suppress.
     """
     return text.replace(token, "<redacted>") if token else text
@@ -293,8 +314,8 @@ def fetch(
         fetched_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         vintage=vintage,
         role=src.role,
-        licence=src.licence,
-        licence_verified=src.licence_verified,
+        license=src.license,
+        license_verified=src.license_verified,
         redistributable=src.redistributable,
         attribution_required=src.attribution_required,
     ))

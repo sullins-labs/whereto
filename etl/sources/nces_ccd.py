@@ -4,11 +4,11 @@ The interesting problem here is that school districts do not nest inside
 counties. A district can straddle two or three of them; a county can contain
 forty. There is no clean join, only a defensible one.
 
-Approach: enrolment-weighted aggregation using the NCES LEA-to-county
+Approach: enrollment-weighted aggregation using the NCES LEA-to-county
 crosswalk. A district contributes to a county in proportion to the share of
 its students who live there. Averaging district-level rates unweighted would
 let a 200-pupil rural district count the same as a 90,000-pupil urban one,
-which is how school "rankings" end up saying things nobody recognises.
+which is how school "rankings" end up saying things nobody recognizes.
 
 What is emitted is spending and staffing, not quality. Outcome measures exist
 but are so confounded by household income that publishing them as a school
@@ -30,7 +30,7 @@ def _num(v) -> float | None:
 
 
 def aggregate(districts: list[dict], crosswalk: list[dict]) -> dict[str, dict]:
-    """districts: [{leaid, enrolment, total_expenditure, teachers, ...}]
+    """districts: [{leaid, enrollment, total_expenditure, teachers, ...}]
     crosswalk:  [{leaid, county_fips, students_in_county}]
     """
     by_lea = {d["leaid"]: d for d in districts}
@@ -43,7 +43,7 @@ def aggregate(districts: list[dict], crosswalk: list[dict]) -> dict[str, dict]:
         share_students = x.get("students_in_county") or 0
         if share_students <= 0:
             continue
-        enrol = d.get("enrolment") or 0
+        enrol = d.get("enrollment") or 0
         share = share_students / enrol if enrol else 0
         if share <= 0:
             continue
@@ -58,7 +58,7 @@ def aggregate(districts: list[dict], crosswalk: list[dict]) -> dict[str, dict]:
         if t["students"] < 50:
             continue      # too few pupils for a stable per-pupil figure
         out[fips] = {
-            "school_enrolment": int(t["students"]),
+            "school_enrollment": int(t["students"]),
             "spend_per_pupil": round(t["spend"] / t["students"]) if t["students"] else None,
             "pupils_per_teacher": round(t["students"] / t["teachers"], 1) if t["teachers"] else None,
             "school_districts": t["districts"],
@@ -87,7 +87,7 @@ def extract() -> dict[str, dict]:
                 for r in rows:
                     districts.append({
                         "leaid": r["LEAID"],
-                        "enrolment": _num(r.get("V33") or r.get("MEMBER")),
+                        "enrollment": _num(r.get("V33") or r.get("MEMBER")),
                         "total_expenditure": _num(r.get("TOTALEXP")),
                         # F-33 is a finance collection and carries no teacher
                         # count, so pupils_per_teacher stays null rather than

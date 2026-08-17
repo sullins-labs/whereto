@@ -20,7 +20,7 @@ PLACE_FIELDS: dict[str, tuple[type | tuple, bool, str]] = {
     "population":      (int,   True,  ""),
     "density":         ((int, float), False, "people per square mile"),
     "land_sq_mi":      ((int, float), False, ""),
-    "drive_min":       (int,   True,  "to the anchor centre"),
+    "drive_min":       (int,   True,  "to the anchor center"),
 
     "median_home_value": ((int, float), True,  ""),
     "rent_monthly":      ((int, float), False, "HUD FMR 2-bed, else ACS median gross rent"),
@@ -40,7 +40,7 @@ PLACE_FIELDS: dict[str, tuple[type | tuple, bool, str]] = {
     "earthquake":      ((int, float), False, ""),
     "heat_wave":       ((int, float), False, ""),
     "insurance_rate":  ((int, float), False, "share of home value per year"),
-    "insurance_basis": (str,   False, "FEMA expected annual loss | modelled from hazard score"),
+    "insurance_basis": (str,   False, "FEMA expected annual loss | modeled from hazard score"),
 
     "violent_per_100k":  ((int, float), False, "absent where reporting coverage is too low"),
     "property_per_100k": ((int, float), False, ""),

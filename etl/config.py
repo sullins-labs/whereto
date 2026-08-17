@@ -2,9 +2,9 @@
 Source registry.
 
 Every external dataset the pipeline touches is declared here and nowhere else.
-Extractors read from this; the licence table on the website is generated from
+Extractors read from this; the license table on the website is generated from
 it; the archival manifest records against it. When a source changes its URL or
-a licence changes, exactly one file needs editing.
+a license changes, exactly one file needs editing.
 
 `key` is the archive folder name and must never be reused for a different
 dataset, because the archive is append-only.
@@ -28,7 +28,7 @@ class Source:
     name: str
     url: str
     cadence: str
-    licence: str
+    license: str
     # "public-domain" sources can be redistributed; "restricted" ones may only
     # be used to derive values, never republished as-is. transform.py enforces
     # this: a restricted source may not appear verbatim in the output.
@@ -47,8 +47,8 @@ class Source:
     # disagree with a primary one and are asserted out of the published file at
     # publish time, because a role recorded in a comment is not a control.
     role: str = "primary"
-    # When the licence was last read from the source itself rather than assumed.
-    licence_verified: str | None = None
+    # When the license was last read from the source itself rather than assumed.
+    license_verified: str | None = None
     # Carried so the go-live checklist can catch it; CC BY-NC needs a credit.
     attribution_required: bool = False
     # Set once a live fetch has passed every gate. A source can be correctly
@@ -73,7 +73,7 @@ register(Source(
     key="census_gazetteer",
     name="Census Gazetteer: counties",
     url="https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer/2024_Gaz_counties_national.zip",
-    cadence="annual", licence="Public domain", redistributable=True,
+    cadence="annual", license="Public domain", redistributable=True,
     notes="County FIPS, name, land area, internal point lat/lon. The spine.",
 ))
 
@@ -81,7 +81,7 @@ register(Source(
     key="census_cbsa_delineation",
     name="Census CBSA delineation file",
     url="https://www2.census.gov/programs-surveys/metro-micro/geographies/reference-files/2023/delineation-files/list1_2023.xlsx",
-    cadence="periodic", licence="Public domain", redistributable=True,
+    cadence="periodic", license="Public domain", redistributable=True,
     notes=(
         "Maps every county to its CBSA and flags it Central or Outlying. "
         "This flag is the backbone of the ring model — it is an official "
@@ -92,11 +92,11 @@ register(Source(
 register(Source(
     key="usda_rucc",
     name="USDA ERS Rural-Urban Continuum Codes",
-    # ERS reorganised its media paths; the old allrfjb2 slug now 404s. Long
+    # ERS reorganized its media paths; the old allrfjb2 slug now 404s. Long
     # format, FIPS/State/County_Name/Attribute/Value, RUCC_2023 as an
     # Attribute row, which is the shape geo._rucc already reads.
     url="https://www.ers.usda.gov/media/5768/2023-rural-urban-continuum-codes.csv",
-    cadence="decennial", licence="Public domain", redistributable=True,
+    cadence="decennial", license="Public domain", redistributable=True,
     notes=(
         "Nine-level county classification from 'metro, 1m+' down to 'rural, "
         "not adjacent to a metro'. Combined with the CBSA central/outlying "
@@ -111,7 +111,7 @@ register(Source(
     key="census_acs5",
     name="Census ACS 5-year, county",
     url="https://api.census.gov/data/{vintage}/acs/acs5",
-    cadence="annual", licence="Public domain", redistributable=True,
+    cadence="annual", license="Public domain", redistributable=True,
     needs_key="CENSUS_API_KEY",
     params={
         "vintage": 2024,
@@ -137,7 +137,7 @@ register(Source(
     key="bea_rpp",
     name="BEA Regional Price Parities",
     url="https://apps.bea.gov/api/data",
-    cadence="annual", licence="Public domain", redistributable=True,
+    cadence="annual", license="Public domain", redistributable=True,
     needs_key="BEA_API_KEY",
     key_param="UserID",   # verified: "key" returns 200 with a zero-byte body
 
@@ -149,7 +149,7 @@ register(Source(
     key="bls_laus",
     name="BLS Local Area Unemployment Statistics",
     url="https://api.bls.gov/publicAPI/v2/timeseries/data/",
-    cadence="monthly", licence="Public domain", redistributable=True,
+    cadence="monthly", license="Public domain", redistributable=True,
     needs_key="BLS_API_KEY",
     key_param="registrationkey", key_style="body",   # v2 rejects GET with 405
 
@@ -168,7 +168,7 @@ register(Source(
     key="hud_fmr",
     name="HUD Fair Market Rents",
     url="https://www.huduser.gov/hudapi/public/fmr/data/{fips}",
-    cadence="annual", licence="Public domain", redistributable=True,
+    cadence="annual", license="Public domain", redistributable=True,
     needs_key="HUD_API_TOKEN",
     key_style="bearer",
 
@@ -179,7 +179,7 @@ register(Source(
     key="zillow_zhvi",
     name="Zillow ZHVI, county",
     url="https://files.zillowstatic.com/research/public_csvs/zhvi/County_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv",
-    cadence="monthly", licence="Attribution; no redistribution",
+    cadence="monthly", license="Attribution; no redistribution",
     redistributable=False,
     notes=(
         "Free to download and derive from, but the terms forbid republishing "
@@ -204,7 +204,7 @@ register(Source(
     url=("https://hub.arcgis.com/api/v3/datasets/"
          "39485e8035d446a5bff03259508ae355_0/downloads/data"
          "?format=csv&spatialRefId=4326"),
-    cadence="multi-year", licence="Public domain", redistributable=True,
+    cadence="multi-year", license="Public domain", redistributable=True,
     notes=(
         "Eighteen hazards with expected annual loss per county. FEMA retired "
         "the web application but kept the download, which is exactly why this "
@@ -221,7 +221,7 @@ register(Source(
     url=("https://www.ncei.noaa.gov/data/normals-monthly/1991-2020/archive/"
          "us-climate-normals_1991-2020_v1.0.1_monthly_multivariate_by-station"
          "_c20230404.tar.gz"),
-    cadence="decennial", licence="Public domain", redistributable=True,
+    cadence="decennial", license="Public domain", redistributable=True,
     notes="Station-level. Aggregated to county by inverse-distance weighting.",
 ))
 
@@ -229,21 +229,21 @@ register(Source(
     key="epa_aqs",
     name="EPA AQS annual air quality by county",
     url="https://aqs.epa.gov/aqsweb/airdata/annual_conc_by_monitor_{year}.zip",
-    cadence="annual", licence="Public domain", redistributable=True,
+    cadence="annual", license="Public domain", redistributable=True,
 ))
 
 register(Source(
     key="hrsa_hpsa",
     name="HRSA Health Professional Shortage Areas",
     url="https://data.hrsa.gov/DataDownload/DD_Files/BCD_HPSA_FCT_DET_PC.csv",
-    cadence="quarterly", licence="Public domain", redistributable=True,
+    cadence="quarterly", license="Public domain", redistributable=True,
 ))
 
 register(Source(
     key="fbi_cde",
-    name="FBI Crime Data Explorer: agency offences",
+    name="FBI Crime Data Explorer: agency offenses",
     url="https://api.usa.gov/crime/fbi/cde/agency/byStateAbbr/{state}",
-    cadence="annual", licence="Public domain", redistributable=True,
+    cadence="annual", license="Public domain", redistributable=True,
     needs_key="FBI_CDE_API_KEY",
     # api.data.gov calls it api_key. Sending "key" returns 403, which reads as
     # a bad key rather than a bad parameter name.
@@ -256,7 +256,7 @@ register(Source(
         "cde/summarized/state/{ST}/{offense} still answers but now returns "
         "state aggregates rather than the agency rows it used to, and there is "
         "no county endpoint: cde/summarized/county/{fips} is a 404. Valid "
-        "offences are violent-crime and property-crime, not 'all'. "
+        "offenses are violent-crime and property-crime, not 'all'. "
         "cde/agency/byStateAbbr/{ST} does work and returns every agency with "
         "its county name, and cde/summarized/agency/{ORI}/{offense} returns "
         "counts for one agency, so county figures are reachable in principle "
@@ -277,16 +277,16 @@ register(Source(
 
 register(Source(
     key="nces_ccd",
-    name="NCES Common Core of Data: district finance and enrolment",
+    name="NCES Common Core of Data: district finance and enrollment",
     # The School District Finance Survey (F-33). Files are named sdf{YY}_1a,
     # by fiscal year, and FY2022 is the newest published as of 2026-08-17:
     # sdf23 and sdf24 both 404. School finance runs two to three years behind,
     # so this is current rather than stale.
     url="https://nces.ed.gov/ccd/Data/zip/sdf22_1a.zip",
-    cadence="annual", licence="Public domain", redistributable=True,
+    cadence="annual", license="Public domain", redistributable=True,
     notes=(
         "One tab-delimited .txt inside the zip, carrying LEAID, CONUM (the "
-        "county), V33 (enrolment) and TOTALEXP together, so district finance "
+        "county), V33 (enrollment) and TOTALEXP together, so district finance "
         "and the county crosswalk arrive in a single fetch. No teacher count "
         "is collected here, so pupils_per_teacher is left null."
     ),
@@ -314,9 +314,9 @@ register(Source(
     # Quarterly, not monthly: returns change once a cycle plus corrections, so
     # a monthly refetch is 200 MB of nothing and four more chances to trip an
     # outage.
-    cadence="quarterly", licence="CC BY-NC", redistributable=False,
+    cadence="quarterly", license="CC BY-NC", redistributable=False,
     role="primary",
-    licence_verified="2026-08-17",
+    license_verified="2026-08-17",
     attribution_required=True,
     verified=False,
     notes="Non-commercial. Used to derive a local lean index, not republished.",
@@ -334,13 +334,13 @@ register(Source(
     # MIT, confirmed by reading the LICENSE file in the repository rather than
     # inferring it from the GitHub badge. So redistribution is permitted, and
     # this is still validation-only: the disqualifier is provenance, not
-    # licence. The data is scraped from network calls (Fox, Politico, NYT) and
+    # license. The data is scraped from network calls (Fox, Politico, NYT) and
     # the repository says so itself. That independence from MEDSL's
     # state-certified lineage is exactly what makes it useful as a check and
     # exactly what makes it unfit to score.
-    licence="MIT", redistributable=True,
+    license="MIT", redistributable=True,
     role="validation",
-    licence_verified="2026-08-17",
+    license_verified="2026-08-17",
     notes=("Never scored. Cross-checks the two-party share county by county "
            "against MEDSL; build.py asserts no value derived from it reaches "
            "places.json."),
@@ -363,17 +363,17 @@ def sources_needing_keys() -> dict[str, str]:
     return {s.key: s.needs_key for s in SOURCES.values() if s.needs_key}
 
 
-def licence_table() -> list[dict]:
-    """Feeds the licence table rendered on the site, so the page can never
+def license_table() -> list[dict]:
+    """Feeds the license table rendered on the site, so the page can never
     drift out of sync with what the pipeline actually pulled."""
     return [
         {
             "name": s.name,
             "cadence": s.cadence,
-            "licence": s.licence,
+            "license": s.license,
             "redistributable": s.redistributable,
             "role": s.role,
-            "licence_verified": s.licence_verified,
+            "license_verified": s.license_verified,
             "attribution_required": s.attribution_required,
             "verified": s.verified,
         }

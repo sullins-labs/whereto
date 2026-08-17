@@ -75,7 +75,7 @@ validation rejects it.
 
 Code is MIT. Data is not; see [DATA.md](DATA.md).
 
-## Licences are enforced, not documented
+## Licenses are enforced, not documented
 
 `config.py` marks each source `redistributable` or not. Zillow's research files
 may be derived from but not republished; MIT's election data is non-commercial;

@@ -14,7 +14,7 @@ import argparse, json, sys, traceback
 from datetime import datetime, timezone
 
 from . import snapshot
-from .config import DIST, CONTRACT_VERSION, licence_table
+from .config import DIST, CONTRACT_VERSION, license_table
 from .contract import envelope, check_envelope
 from .validate import check_dataset, report, BLOCKING, REQUIRED
 
@@ -32,9 +32,9 @@ STAGES = [
     ("hazard",    "wildfire, flood, wind, quake",          ()),
     ("climate",   "temperature normals",                   ("spine",)),
     ("air",       "particulates and ozone",                ("spine",)),
-    ("crime",     "violent and property offences",         ("spine",)),
+    ("crime",     "violent and property offenses",         ("spine",)),
     ("health",    "shortage areas and provider ratios",    ("spine",)),
-    ("schools",   "district finance and enrolment",        ()),
+    ("schools",   "district finance and enrollment",        ()),
     # Depends on the spine so the coverage gate can insist the anchor counties
     # specifically are present, not merely that the row count looks healthy.
     ("politics",  "local voting lean",                     ("spine",)),
@@ -166,7 +166,7 @@ def run(offline: bool = False, as_of: str | None = None) -> int:
     # only in a build log nobody kept.
     payload = envelope(
         places=records,
-        sources=licence_table(),
+        sources=license_table(),
         built_at=started.isoformat(timespec="seconds"),
         warnings=[f.__dict__ for f in findings],
         failures=failures,
@@ -199,7 +199,7 @@ def _assert_no_validation_sources(payload: dict) -> None:
     likely to be remembered.
 
     Checked two ways because they fail differently. A validation source
-    appearing in the licence table means it was presented to a reader as a
+    appearing in the license table means it was presented to a reader as a
     source of the numbers. A field carrying its name means a value derived
     from it was published.
     """
@@ -212,7 +212,7 @@ def _assert_no_validation_sources(payload: dict) -> None:
     listed = {row.get("name") for row in payload.get("sources", [])}
     for key, src in validation.items():
         if src.name in listed:
-            problems.append(f"{key} is listed in the published licence table")
+            problems.append(f"{key} is listed in the published license table")
 
     banned = {k.lower() for k in validation}
     for rec in payload.get("places", [])[:]:

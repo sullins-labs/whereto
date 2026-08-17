@@ -117,7 +117,7 @@ def assign_rings(counties: list[County]) -> list[County]:
     Order matters: the CBSA flag decides metro membership, RUCC decides how
     rural, and density only breaks ties inside the metro. Density alone would
     put Manhattan and a dense small city in the same ring, which is wrong —
-    the ring is about position relative to a centre, not about crowding.
+    the ring is about position relative to a center, not about crowding.
     """
     by_cbsa: dict[str, list[County]] = {}
     for c in counties:
@@ -197,7 +197,7 @@ def split_core_counties(counties: list[County]) -> list[County]:
     Resolving it properly means moving to tracts.
     """
     for c in counties:
-        # A large county at the centre of a metro necessarily contains both
+        # A large county at the center of a metro necessarily contains both
         # downtown and open country. Density does not detect this — Gallatin
         # County holds Bozeman and 2,600 square miles of mountain.
         if c.ring is not None and c.ring <= 1 and c.land_sq_mi > 400:
@@ -205,7 +205,7 @@ def split_core_counties(counties: list[County]) -> list[County]:
     return counties
 
 
-def summarise(counties: list[County]) -> dict:
+def summarize(counties: list[County]) -> dict:
     out: dict = {"total": len(counties), "by_ring": {}, "unassigned": 0, "heterogeneous": 0}
     for c in counties:
         if c.ring is None:

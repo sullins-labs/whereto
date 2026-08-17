@@ -5,7 +5,7 @@ questions and often disagree:
 
   state_lean  what the legislature has enacted, the laws that follow you into
               a rural county
-  local_lean  how the county has actually voted, who your neighbours are
+  local_lean  how the county has actually voted, who your neighbors are
 
 The interface scores both as distance from what the user asked for, so nothing
 here is ranked good or bad. That neutrality has to hold in the data layer too:

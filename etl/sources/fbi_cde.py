@@ -1,9 +1,9 @@
-"""FBI Crime Data Explorer, agency offences aggregated to counties.
+"""FBI Crime Data Explorer, agency offenses aggregated to counties.
 
 The hard part is not fetching, it is knowing when to refuse. Reporting is
 voluntary and coverage varies enormously by agency and by year. A county where
 agencies covering 40% of the population filed returns does not have a crime
-rate — it has an artefact.
+rate — it has an artifact.
 
 So this returns coverage alongside the numbers, and validate.py suppresses any
 county below the floor. Publishing a confident-looking rate built on partial
@@ -50,7 +50,7 @@ def aggregate(agencies: list[dict], county_pop: dict[str, int]) -> dict[str, dic
                "crime_pop_covered": int(t["weighted_pop"])}
         if coverage >= COVERAGE_FLOOR:
             # rates use covered population, not county population — dividing
-            # offences from 60% of a county by 100% of its people halves the rate
+            # offenses from 60% of a county by 100% of its people halves the rate
             base = max(1, t["pop"])
             rec["violent_per_100k"] = round(t["violent"] / base * 100_000, 1)
             rec["property_per_100k"] = round(t["property"] / base * 100_000, 1)
@@ -66,7 +66,7 @@ def ori_to_county(rows: list[dict]) -> dict[str, str]:
     """ORI (agency identifier) to county FIPS.
 
     Two wrinkles worth knowing about. State police and highway patrol agencies
-    have an ORI but no meaningful county — their offences are spread across a
+    have an ORI but no meaningful county — their offenses are spread across a
     state and assigning them anywhere is arbitrary, so they are dropped rather
     than dumped into the capital's county. And a handful of agencies serve more
     than one county; they are attributed to the one holding the largest share
