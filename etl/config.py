@@ -247,7 +247,20 @@ register(Source(
 register(Source(
     key="mit_election",
     name="MIT Election Data and Science Lab: county presidential returns",
-    url="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/VOQCHQ",
+    # The /datafile/ endpoint takes a *file* id; the DOI below it is the
+    # *dataset*, so the previous URL was the wrong shape regardless of
+    # anything else. countypres_2000-2024.tab is file 13573089 in version 20.0
+    # of doi:10.7910/DVN/VOQCHQ, and format=original asks for the upload
+    # rather than Dataverse's tab-separated conversion.
+    #
+    # UNVERIFIED, and deliberately recorded as such: as of 2026-08-16 Harvard
+    # Dataverse has disabled API access during an incident ("functionality
+    # such as access to our APIs, other than within a browser, is limited or
+    # disabled"), answering 202 with an empty body. The file id and version
+    # were read off the dataset page in a browser, so the shape is right, but
+    # nothing here has been exercised against a live API. Confirm on the first
+    # build after Harvard restores service.
+    url="https://dataverse.harvard.edu/api/access/datafile/13573089?format=original",
     cadence="per election", licence="CC BY-NC", redistributable=False,
     notes="Non-commercial. Used to derive a local lean index, not republished.",
 ))
