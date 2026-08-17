@@ -15,7 +15,8 @@ from datetime import datetime, timezone
 
 from . import snapshot
 from .config import DIST, CONTRACT_VERSION, licence_table
-from .validate import check_dataset, report, BLOCKING
+from .contract import envelope, check_envelope
+from .validate import check_dataset, report, BLOCKING, REQUIRED
 
 # Order is a dependency graph, not a preference. ACS runs first because the
 # spine needs population to compute density, and density decides the ring.
@@ -67,10 +68,25 @@ def _stages(offline: bool, as_of: str | None):
         return bls_laus.extract(sorted(ctx["spine"]))
 
     def housing(**_):
+        # Two independent sources behind one stage, so they degrade
+        # independently too. Written as a tuple of calls, both were evaluated
+        # before the loop and either one raising discarded the other's data.
+        # That cost more than it looks: Zillow supplies median_home_value,
+        # which validate.py requires, so an unrelated HUD outage blocked
+        # publication of a field that had been fetched successfully.
         merged: dict[str, dict] = {}
-        for table in (housing_src.zillow(), housing_src.hud_fmr()):
+        for name, table_fn in (("zillow", housing_src.zillow),
+                               ("hud_fmr", housing_src.hud_fmr)):
+            try:
+                table = table_fn()
+            except Exception as exc:                 # noqa: BLE001
+                ctx.setdefault("degraded", []).append(f"housing/{name}: {exc}")
+                print(f"    ! housing/{name} degraded — {exc}")
+                continue
             for f, v in table.items():
                 merged.setdefault(f, {}).update(v)
+        if not merged:
+            raise RuntimeError("no housing source returned anything")
         return merged
 
     def climate(**_):
@@ -129,6 +145,7 @@ def run(offline: bool = False, as_of: str | None = None) -> int:
 
     from .transform import run as transform_run
     records = transform_run(assemble(results))
+    records, withheld = _withhold_uncovered(records)
     findings, stats = check_dataset(records)
     print("\n" + report(findings, stats))
 
@@ -138,20 +155,72 @@ def run(offline: bool = False, as_of: str | None = None) -> int:
         return 1
 
     DIST.mkdir(parents=True, exist_ok=True)
-    payload = {
-        "contract_version": CONTRACT_VERSION,
-        "built_at": started.isoformat(timespec="seconds"),
-        "sources": licence_table(),
-        "stage_failures": failures,
-        "warnings": [f.__dict__ for f in findings],
-        "places": records,
-    }
+    # Built by contract.envelope rather than assembled here, because the two
+    # had already drifted apart once. withheld is named in the payload so
+    # "Puerto Rico is not in the list" has an answer in the data rather than
+    # only in a build log nobody kept.
+    payload = envelope(
+        places=records,
+        sources=licence_table(),
+        built_at=started.isoformat(timespec="seconds"),
+        warnings=[f.__dict__ for f in findings],
+        failures=failures,
+        withheld=withheld,
+    )
+    envelope_problems = check_envelope(payload)
+    if envelope_problems:
+        print("\nBlocked on the payload wrapper:")
+        for p in envelope_problems:
+            print(f"  {p}")
+        print("Nothing written — the previous build stays live.")
+        return 1
+
     out = DIST / "places.json"
     out.write_text(json.dumps(payload, separators=(",", ":")))
     print(f"\nWrote {out} — {len(records)} places, {out.stat().st_size/1024:.0f} kB")
     if failures:
         print(f"Degraded: {', '.join(failures)} — affected fields are marked in the output.")
     return 0
+
+
+def _withhold_uncovered(records: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Separate places that cannot be scored from places that can.
+
+    Some gaps are not failures and never will be. BEA publishes no Regional
+    Price Parity for Puerto Rico, so all 78 municipios lack `rpp`. Five remote
+    Alaskan boroughs have no weather station within the 60-mile radius, which
+    is the aggregator declining to borrow a temperature from 200 miles away.
+    Four counties, Loving TX among them with 33 residents, are too small for a
+    published median home value.
+
+    Requiring those fields of those places means the build can never pass, so
+    the choice is to guess, to drop the requirement for everyone, or to
+    withhold the place. Withholding is the only one of the three that keeps
+    REQUIRED meaning what it says. A place that cannot be scored is not ranked
+    rather than ranked from holes, and it returns on its own the moment
+    upstream covers it.
+
+    This cannot quietly hide a broken source: withheld places are listed in the
+    build output and in the payload, and validate.py still blocks below 2,800
+    records and below 90% fill on the fields it gates.
+    """
+    publishable, withheld = [], []
+    for r in records:
+        gaps = [f for f in REQUIRED if r.get(f) is None]
+        if gaps:
+            withheld.append({"fips": r.get("fips"), "name": r.get("name"),
+                             "state": r.get("state"), "missing": gaps})
+        else:
+            publishable.append(r)
+
+    if withheld:
+        grouped: dict[tuple, list[str]] = {}
+        for w in withheld:
+            grouped.setdefault((w["state"], tuple(w["missing"])), []).append(w["fips"])
+        print(f"\nWithheld {len(withheld)} places that upstream does not cover:")
+        for (state, fields), fips in sorted(grouped.items(), key=lambda kv: -len(kv[1])):
+            print(f"  {len(fips):4d}  {state or '??'}  missing {', '.join(fields)}")
+    return publishable, withheld
 
 
 def assemble(results: dict) -> list[dict]:  # noqa: D401

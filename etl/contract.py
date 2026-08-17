@@ -87,8 +87,38 @@ def check(rec: dict) -> list[str]:
     return problems
 
 
+# Keys the site reads off the payload itself rather than off a place. Losing
+# one of these does not show up as a missing value; it throws on boot.
+ENVELOPE_KEYS = ["contract_version", "built_at", "place_count", "sources",
+                 "stage_failures", "warnings", "places"]
+
+
+def check_envelope(payload: dict) -> list[str]:
+    """Verify the wrapper, not the contents. validate.py checks every place
+    and would pass a payload with all 3,135 of them and no place_count."""
+    problems = [f"missing envelope key: {k}"
+                for k in ENVELOPE_KEYS if k not in payload]
+    if payload.get("contract_version") != VERSION:
+        problems.append(
+            f"contract_version is {payload.get('contract_version')!r}, expected {VERSION}")
+    if payload.get("place_count") != len(payload.get("places") or []):
+        problems.append(
+            f"place_count {payload.get('place_count')!r} does not match "
+            f"{len(payload.get('places') or [])} places")
+    return problems
+
+
 def envelope(places: list[dict], sources: list[dict], built_at: str,
-             warnings: list | None = None, failures: dict | None = None) -> dict:
+             warnings: list | None = None, failures: dict | None = None,
+             withheld: list | None = None) -> dict:
+    """The published payload. Build it here and nowhere else.
+
+    This existed and was never called: build.py assembled the same dict by
+    hand and the two drifted, losing place_count. The site reads that key on
+    boot, so the first real dataset rendered zero places and threw before it
+    got as far as the table. Nothing caught it, because every gate in this
+    pipeline checks the places and none of them check the envelope around them.
+    """
     return {
         "contract_version": VERSION,
         "built_at": built_at,
@@ -96,5 +126,6 @@ def envelope(places: list[dict], sources: list[dict], built_at: str,
         "sources": sources,
         "stage_failures": failures or {},
         "warnings": warnings or [],
+        "withheld": withheld or [],
         "places": places,
     }
