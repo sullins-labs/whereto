@@ -120,6 +120,11 @@ register(Source(
             "B19013_001E": "median_household_income",
             "B25077_001E": "median_home_value",
             "B25064_001E": "median_gross_rent",
+            # Median real estate taxes paid, owner-occupied. Divided by median
+            # home value this gives an effective property tax rate per county,
+            # which replaces the single hand-entered rate per state that used
+            # to sit in state_tax.yaml.
+            "B25103_001E": "median_real_estate_taxes",
             "B25041_001E": "housing_units",
             "B08303_001E": "commute_total",
             "B15003_022E": "bachelors",

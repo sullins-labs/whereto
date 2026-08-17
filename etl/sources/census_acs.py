@@ -48,5 +48,17 @@ def extract(vintage: int | None = None) -> dict[str, dict]:
                 rec[field] = None
                 continue
             rec[field] = None if v in ACS_NULLS else v
+
+        # Effective property tax rate, per county rather than per state.
+        # Property tax is levied locally, so a state figure averages away the
+        # thing a household is choosing between: New Jersey counties run from
+        # roughly 1.8% to 3%. Both halves come from the same table and the same
+        # vintage, so the ratio is internally consistent even where the
+        # underlying estimates are noisy.
+        taxes, value = rec.get("median_real_estate_taxes"), rec.get("median_home_value")
+        rec["property_effective"] = (
+            round(taxes / value * 100, 2)
+            if taxes and value and value > 0 else None
+        )
         out[fips] = rec
     return out

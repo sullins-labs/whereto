@@ -1,9 +1,16 @@
-# State tax treatment. This is statute, not data — nobody publishes a
+# State tax treatment. This is statute, not data: nobody publishes a
 # machine-readable feed of "does this state tax Social Security", so it is
 # maintained by hand, reviewed annually, and versioned like code.
 #
 # Every field carries an as_of date and a source. A value without both is a
 # guess wearing a number's clothing, and validate.py rejects it.
+#
+# property_effective used to live here as one rate per state. It has moved to
+# the ACS extractor, which divides median real estate taxes paid by median home
+# value per county. It was always an empirical measurement rather than statute,
+# and a single state figure hid the variation that matters: New Jersey counties
+# run from roughly 1.8% to 3%, and a household picking between two of them was
+# shown the same number for both.
 #
 # retire_code:
 #   0  no state income tax at all
@@ -14,58 +21,344 @@ meta:
   as_of: 2026-01-01
   reviewed_by: manual
   sources:
+    - "Tax Foundation, State Individual Income Tax Rates and Brackets, tax year 2025"
+    - "Tax Foundation, State and Local Sales Tax Rates, 1 January 2026 (state rate plus population-weighted average local rate)"
     - "State departments of revenue, tax year 2025 schedules"
-    - "Tax Foundation, State and Local Sales Tax Rates, midyear 2025"
     - "NCSL, State Tax Treatment of Retirement Income"
-    - "Census Bureau, Annual Survey of State and Local Government Finances"
+  review_notes: >-
+    income_top_rate, income_flat and sales_combined are transcribed from the
+    Tax Foundation tables named above and are the most checkable values here.
+    retire_code is a judgement that compresses a whole statute into one digit,
+    so it is the field most worth arguing with. The eight states coded 3 are
+    those still taxing Social Security in some form in tax year 2026; West
+    Virginia finished phasing its tax out and is coded 2 rather than 3.
+    Washington levies a capital gains tax but no tax on wage or retirement
+    income, so income_top_rate is 0 for the household this model describes.
 
 states:
+  AL:
+    income_top_rate: 5.00
+    income_flat: false
+    sales_combined: 9.46
+    retire_code: 2
+  AK:
+    income_top_rate: 0.0
+    income_flat: false
+    sales_combined: 1.82
+    retire_code: 0
+    note: >-
+      No state income tax and no state sales tax; the rate shown is local only
+      and is the lowest in the country. Alaska also pays a dividend, which this
+      model does not count because it is not a tax treatment.
+  AZ:
+    income_top_rate: 2.50
+    income_flat: true
+    sales_combined: 8.52
+    retire_code: 2
+  AR:
+    income_top_rate: 3.90
+    income_flat: false
+    sales_combined: 9.46
+    retire_code: 2
+  CA:
+    income_top_rate: 13.30
+    income_flat: false
+    sales_combined: 8.99
+    retire_code: 2
+    note: >-
+      Proposition 13 caps assessment growth, so long-tenured owners pay far
+      less than recent buyers on an identical house. County effective rates now
+      come from ACS and still describe the average of both, so a recent buyer
+      should read the property figure as optimistic.
+  CO:
+    income_top_rate: 4.40
+    income_flat: true
+    sales_combined: 7.89
+    retire_code: 3
+  CT:
+    income_top_rate: 6.99
+    income_flat: false
+    sales_combined: 6.35
+    retire_code: 3
+  DE:
+    income_top_rate: 6.60
+    income_flat: false
+    sales_combined: 0.00
+    retire_code: 2
+    note: >-
+      No sales tax at any level, which shifts the burden onto income and makes
+      Delaware read as expensive on the headline rate and cheap in a weekly
+      shop.
+  DC:
+    income_top_rate: 10.75
+    income_flat: false
+    sales_combined: 6.00
+    retire_code: 2
+  FL:
+    income_top_rate: 0.0
+    income_flat: false
+    sales_combined: 6.98
+    retire_code: 0
+  GA:
+    income_top_rate: 5.39
+    income_flat: true
+    sales_combined: 7.49
+    retire_code: 2
+  HI:
+    income_top_rate: 11.00
+    income_flat: false
+    sales_combined: 4.50
+    retire_code: 2
+    note: >-
+      The general excise tax is levied on business activity rather than at the
+      till, so the headline 4.5% understates what a household actually pays;
+      it is applied at more stages than a conventional sales tax.
+  ID:
+    income_top_rate: 5.695
+    income_flat: true
+    sales_combined: 6.03
+    retire_code: 2
+  IL:
+    income_top_rate: 4.95
+    income_flat: true
+    sales_combined: 8.96
+    retire_code: 1
+    note: >-
+      A flat income tax that exempts retirement income entirely, pensions and
+      401(k) withdrawals included, alongside some of the highest effective
+      property taxes in the country. Which of those dominates depends almost
+      entirely on whether the household is still working.
+  IN:
+    income_top_rate: 3.00
+    income_flat: true
+    sales_combined: 7.00
+    retire_code: 2
+  IA:
+    income_top_rate: 3.80
+    income_flat: true
+    sales_combined: 6.94
+    retire_code: 1
+    note: >-
+      Retirement income is exempt for filers aged 55 and over, so the code of 1
+      describes a retired household and overstates the benefit for anyone
+      younger.
+  KS:
+    income_top_rate: 5.58
+    income_flat: false
+    sales_combined: 8.69
+    retire_code: 2
+  KY:
+    income_top_rate: 4.00
+    income_flat: true
+    sales_combined: 6.00
+    retire_code: 2
+  LA:
+    income_top_rate: 3.00
+    income_flat: true
+    sales_combined: 10.11
+    retire_code: 2
+    note: >-
+      The highest combined sales tax in the country, against one of the lower
+      flat income rates. The burden is shifted toward what a household spends
+      rather than what it earns.
+  ME:
+    income_top_rate: 7.15
+    income_flat: false
+    sales_combined: 5.50
+    retire_code: 2
+  MD:
+    income_top_rate: 5.75
+    income_flat: false
+    sales_combined: 6.00
+    retire_code: 2
+    note: >-
+      Counties levy their own income tax on top of the state rate, so the true
+      top marginal rate is meaningfully higher than the figure here in most of
+      the state.
+  MA:
+    income_top_rate: 9.00
+    income_flat: false
+    sales_combined: 6.25
+    retire_code: 2
+    note: >-
+      Effectively flat at 5% with a 4% surtax above one million dollars, so the
+      9% top rate applies to very few households.
+  MI:
+    income_top_rate: 4.25
+    income_flat: true
+    sales_combined: 6.00
+    retire_code: 2
+  MN:
+    income_top_rate: 9.85
+    income_flat: false
+    sales_combined: 8.14
+    retire_code: 3
+  MS:
+    income_top_rate: 4.40
+    income_flat: true
+    sales_combined: 7.06
+    retire_code: 1
+  MO:
+    income_top_rate: 4.70
+    income_flat: false
+    sales_combined: 8.44
+    retire_code: 2
+  MT:
+    income_top_rate: 5.90
+    income_flat: false
+    sales_combined: 0.00
+    retire_code: 3
+    note: >-
+      No sales tax, but one of the eight states still taxing part of Social
+      Security, so the ranking flips depending on whether the household is
+      working or retired.
+  NE:
+    income_top_rate: 5.20
+    income_flat: false
+    sales_combined: 6.98
+    retire_code: 2
+  NV:
+    income_top_rate: 0.0
+    income_flat: false
+    sales_combined: 8.24
+    retire_code: 0
+  NH:
+    income_top_rate: 0.0
+    income_flat: false
+    sales_combined: 0.00
+    retire_code: 0
+    note: >-
+      No income tax and no sales tax, having finished phasing out the tax on
+      interest and dividends. The revenue is raised on property instead, where
+      New Hampshire is among the highest in the country.
+  NJ:
+    income_top_rate: 10.75
+    income_flat: false
+    sales_combined: 6.60
+    retire_code: 2
+  NM:
+    income_top_rate: 5.90
+    income_flat: false
+    sales_combined: 7.67
+    retire_code: 3
+  NY:
+    income_top_rate: 10.90
+    income_flat: false
+    sales_combined: 8.54
+    retire_code: 2
+  NC:
+    income_top_rate: 4.25
+    income_flat: true
+    sales_combined: 7.00
+    retire_code: 2
+  ND:
+    income_top_rate: 2.50
+    income_flat: false
+    sales_combined: 7.09
+    retire_code: 2
+  OH:
+    income_top_rate: 3.50
+    income_flat: false
+    sales_combined: 7.29
+    retire_code: 2
+    note: >-
+      Many municipalities and school districts levy their own income tax, which
+      this state-level figure does not capture.
+  OK:
+    income_top_rate: 4.75
+    income_flat: false
+    sales_combined: 9.06
+    retire_code: 2
+  OR:
+    income_top_rate: 9.90
+    income_flat: false
+    sales_combined: 0.00
+    retire_code: 2
+    note: >-
+      No sales tax at any level, paid for with one of the higher income taxes.
+      The pairing suits a household that spends a lot and earns modestly, and
+      penalises the reverse.
   PA:
     income_top_rate: 3.07
     income_flat: true
     sales_combined: 6.34
-    property_effective: 1.49
     retire_code: 1
     note: >-
       Flat income tax but retirement income is fully exempt, which makes
       Pennsylvania cheap for retirees and unremarkable for workers. A model
       that looks only at the headline rate gets this exactly backwards.
+  RI:
+    income_top_rate: 5.99
+    income_flat: false
+    sales_combined: 7.00
+    retire_code: 3
+  SC:
+    income_top_rate: 6.20
+    income_flat: false
+    sales_combined: 7.49
+    retire_code: 2
+  SD:
+    income_top_rate: 0.0
+    income_flat: false
+    sales_combined: 6.11
+    retire_code: 0
   TN:
     income_top_rate: 0.0
     income_flat: false
-    sales_combined: 9.55
-    property_effective: 0.55
+    sales_combined: 9.61
     retire_code: 0
     note: >-
-      No income tax, but the highest combined sales tax in the country. The
-      burden is shifted, not removed, and it lands hardest on households that
-      spend most of what they earn.
-  CA:
-    income_top_rate: 13.3
+      No income tax, but among the highest combined sales taxes in the country.
+      The burden is shifted, not removed, and it lands hardest on households
+      that spend most of what they earn.
+  TX:
+    income_top_rate: 0.0
     income_flat: false
-    sales_combined: 8.85
-    property_effective: 0.71
-    retire_code: 2
+    sales_combined: 8.20
+    retire_code: 0
     note: >-
-      Proposition 13 caps assessment growth, so the effective property rate is
-      low and long-tenured owners pay far less than recent buyers. A single
-      state-level rate overstates the cost for the former and understates it
-      for the latter.
+      No income tax, funded substantially by property taxes that are among the
+      highest in the country. The trade is visible in the county property
+      figures rather than here.
+  UT:
+    income_top_rate: 4.55
+    income_flat: true
+    sales_combined: 7.42
+    retire_code: 3
+  VT:
+    income_top_rate: 8.75
+    income_flat: false
+    sales_combined: 6.39
+    retire_code: 3
+  VA:
+    income_top_rate: 5.75
+    income_flat: false
+    sales_combined: 5.77
+    retire_code: 2
   WA:
     income_top_rate: 0.0
     income_flat: false
-    sales_combined: 9.38
-    property_effective: 0.87
+    sales_combined: 9.51
     retire_code: 0
-  NY:
-    income_top_rate: 10.9
+    note: >-
+      A capital gains tax exists but there is no tax on wage or retirement
+      income, so the rate here is 0 for the household this model describes.
+  WV:
+    income_top_rate: 4.82
     income_flat: false
-    sales_combined: 8.53
-    property_effective: 1.54
+    sales_combined: 6.59
     retire_code: 2
-  FL:
+    note: >-
+      Finished phasing out its tax on Social Security, so from tax year 2026
+      West Virginia is coded 2 rather than 3. Anything written before that
+      change will still list it among the states that tax benefits.
+  WI:
+    income_top_rate: 7.65
+    income_flat: false
+    sales_combined: 5.72
+    retire_code: 2
+  WY:
     income_top_rate: 0.0
     income_flat: false
-    sales_combined: 7.00
-    property_effective: 0.79
+    sales_combined: 5.56
     retire_code: 0

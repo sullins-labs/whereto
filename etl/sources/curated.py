@@ -37,7 +37,9 @@ def extract(county_state: dict[str, str]) -> dict[str, dict]:
             rec.update({
                 "income_top_rate": t["income_top_rate"],
                 "sales_combined": t["sales_combined"],
-                "property_effective": t["property_effective"],
+                # property_effective is no longer read here. It is measured per
+                # county from ACS, because it was never statute; it is what
+                # households in a place actually paid.
                 "retire_code": t["retire_code"],
             })
         if st in svc:
