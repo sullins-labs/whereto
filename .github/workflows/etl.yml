@@ -46,10 +46,15 @@ jobs:
           FBI_CDE_API_KEY: ${{ secrets.FBI_CDE_API_KEY }}
         run: python -m etl.build
 
+      # Every suite, not a subset. test_pipeline and test_extractors existed
+      # and were never run here, so they gated nothing.
       - name: Run tests
         run: |
           python tests/test_spine.py
           python tests/test_validate.py
+          python tests/test_pipeline.py
+          python tests/test_extractors.py
+          python tests/test_politics.py
 
       # Snapshots go to a release rather than the repo. Release assets are
       # free and effectively unlimited; committing a few hundred megabytes of
