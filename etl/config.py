@@ -43,6 +43,18 @@ class Source:
     daily_call_cap: int | None = None  # hard cap the fetcher will not exceed
     notes: str = ""
     params: dict = field(default_factory=dict)
+    # "primary" sources may be scored on. "validation" sources exist only to
+    # disagree with a primary one and are asserted out of the published file at
+    # publish time, because a role recorded in a comment is not a control.
+    role: str = "primary"
+    # When the licence was last read from the source itself rather than assumed.
+    licence_verified: str | None = None
+    # Carried so the go-live checklist can catch it; CC BY-NC needs a credit.
+    attribution_required: bool = False
+    # Set once a live fetch has passed every gate. A source can be correctly
+    # configured and still never have been exercised, and those are different
+    # states worth telling apart.
+    verified: bool = True
 
 
 SOURCES: dict[str, Source] = {}
@@ -261,8 +273,39 @@ register(Source(
     # nothing here has been exercised against a live API. Confirm on the first
     # build after Harvard restores service.
     url="https://dataverse.harvard.edu/api/access/datafile/13573089?format=original",
-    cadence="per election", licence="CC BY-NC", redistributable=False,
+    # Quarterly, not monthly: returns change once a cycle plus corrections, so
+    # a monthly refetch is 200 MB of nothing and four more chances to trip an
+    # outage.
+    cadence="quarterly", licence="CC BY-NC", redistributable=False,
+    role="primary",
+    licence_verified="2026-08-17",
+    attribution_required=True,
+    verified=False,
     notes="Non-commercial. Used to derive a local lean index, not republished.",
+))
+
+register(Source(
+    key="tonmcg_returns",
+    name="tonmcg county-level presidential results (validation only)",
+    # Commit-pinned. A moving branch would let the thing this is meant to
+    # cross-check against change underneath the cross-check.
+    url=("https://raw.githubusercontent.com/tonmcg/"
+         "US_County_Level_Election_Results_08-24/"
+         "8cccc82f9235dced94a76d143c59a43f4a6bf979"),
+    cadence="quarterly",
+    # MIT, confirmed by reading the LICENSE file in the repository rather than
+    # inferring it from the GitHub badge. So redistribution is permitted, and
+    # this is still validation-only: the disqualifier is provenance, not
+    # licence. The data is scraped from network calls (Fox, Politico, NYT) and
+    # the repository says so itself. That independence from MEDSL's
+    # state-certified lineage is exactly what makes it useful as a check and
+    # exactly what makes it unfit to score.
+    licence="MIT", redistributable=True,
+    role="validation",
+    licence_verified="2026-08-17",
+    notes=("Never scored. Cross-checks the two-party share county by county "
+           "against MEDSL; build.py asserts no value derived from it reaches "
+           "places.json."),
 ))
 
 # ---------------------------------------------------- curated, no API exists
@@ -291,6 +334,13 @@ def licence_table() -> list[dict]:
             "cadence": s.cadence,
             "licence": s.licence,
             "redistributable": s.redistributable,
+            "role": s.role,
+            "licence_verified": s.licence_verified,
+            "attribution_required": s.attribution_required,
+            "verified": s.verified,
         }
-        for s in SOURCES.values()
+        # Validation sources are deliberately absent from the published table:
+        # listing one next to the sources the numbers came from would imply it
+        # contributed to them.
+        for s in SOURCES.values() if s.role == "primary"
     ]
