@@ -3,8 +3,8 @@
 # but are not an avoided invoice, and counting them would let this file be
 # tuned to any conclusion.
 #
-# Two fields are deliberately zero everywhere. See review_notes; they are gaps
-# that are declared rather than filled with plausible numbers.
+# One field is deliberately zero everywhere. See review_notes; it is a gap that
+# is declared rather than filled with plausible numbers.
 meta:
   as_of: 2026-01-01
   reviewed_by: manual
@@ -13,6 +13,7 @@ meta:
     - "NCES/IPEDS via Education Data Initiative, average published in-state tuition and fees, public four-year, AY 2025-26"
     - "KFF, status of state action on the Medicaid expansion decision"
     - "State statutes establishing paid family and medical leave programmes"
+    - "NASSGAP, 55th Annual Survey Report on State-Sponsored Student Financial Aid, Table 12, estimated undergraduate grant dollars per undergraduate FTE, 2023-24"
   review_notes: >-
     prek_coverage_pct and tuition_instate are transcribed from the two tables
     named above and cover all 51 jurisdictions at one vintage each.
@@ -22,16 +23,21 @@ meta:
     in pays a household nothing. Maryland has enacted a programme whose
     benefits do not begin in 2026, so it is recorded false.
 
-    grant_aid_per_student and senior_property_relief_pct are zero for every
-    state, and that is a decision rather than an oversight.
+    grant_aid_per_student comes from NASSGAP Table 12, which already divides
+    each state's undergraduate grant spending by its IPEDS undergraduate FTE,
+    so it is a published ratio rather than one computed here. It is the one
+    figure in this file on a different vintage: 2023-24, from the most recent
+    survey published, where tuition is 2025-26. Grant programmes move slowly
+    enough that mixing them is defensible, and saying so is cheaper than
+    pretending they match. Wyoming reports none, which is why it is 0.
 
-    State grant aid per student would need NASSGAP's survey read state by
-    state. Filling in only the states with famous programmes would be worse
-    than filling in none: this tool compares places, so a bias applied evenly
-    cancels out and a bias applied to the states someone happened to remember
-    does not.
+    That ordering is worth a glance before trusting the file: New Mexico,
+    Georgia and South Carolina lead, and Utah, New Hampshire and Montana are
+    close to nothing. An earlier draft of this file guessed these values and
+    put California above Washington, which the survey contradicts.
 
-    Senior property tax relief is worse still. Every state offers something,
+    senior_property_relief_pct is zero for every state, and that is a decision
+    rather than an oversight. Every state offers something,
     but the programmes are income-tested at thresholds low enough that the
     typical retired household in this model may not qualify at all
     (Pennsylvania cuts off at $35,000, Utah at $44,221), and they are
@@ -44,63 +50,63 @@ states:
   AL:
     prek_coverage_pct: 41
     tuition_instate: 12736
-    grant_aid_per_student: 0
+    grant_aid_per_student: 287
     medicaid_expansion: false
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   AK:
     prek_coverage_pct: 10
     tuition_instate: 9215
-    grant_aid_per_student: 0
+    grant_aid_per_student: 890
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   AZ:
     prek_coverage_pct: 4
     tuition_instate: 13392
-    grant_aid_per_student: 0
+    grant_aid_per_student: 218
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   AR:
     prek_coverage_pct: 32
     tuition_instate: 9778
-    grant_aid_per_student: 0
+    grant_aid_per_student: 939
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   CA:
     prek_coverage_pct: 48
     tuition_instate: 9310
-    grant_aid_per_student: 0
+    grant_aid_per_student: 1911
     medicaid_expansion: true
     paid_family_leave: true
     senior_property_relief_pct: 0.0
   CO:
     prek_coverage_pct: 70
     tuition_instate: 10894
-    grant_aid_per_student: 0
+    grant_aid_per_student: 917
     medicaid_expansion: true
     paid_family_leave: true
     senior_property_relief_pct: 0.0
   CT:
     prek_coverage_pct: 13
     tuition_instate: 18240
-    grant_aid_per_student: 0
+    grant_aid_per_student: 245
     medicaid_expansion: true
     paid_family_leave: true
     senior_property_relief_pct: 0.0
   DE:
     prek_coverage_pct: 8
     tuition_instate: 12713
-    grant_aid_per_student: 0
+    grant_aid_per_student: 1082
     medicaid_expansion: true
     paid_family_leave: true
     senior_property_relief_pct: 0.0
   DC:
     prek_coverage_pct: 95
     tuition_instate: 6348
-    grant_aid_per_student: 0
+    grant_aid_per_student: 728
     medicaid_expansion: true
     paid_family_leave: true
     senior_property_relief_pct: 0.0
@@ -111,7 +117,7 @@ states:
   FL:
     prek_coverage_pct: 65
     tuition_instate: 4836
-    grant_aid_per_student: 0
+    grant_aid_per_student: 1386
     medicaid_expansion: false
     paid_family_leave: false
     senior_property_relief_pct: 0.0
@@ -122,21 +128,21 @@ states:
   GA:
     prek_coverage_pct: 55
     tuition_instate: 7723
-    grant_aid_per_student: 0
+    grant_aid_per_student: 2953
     medicaid_expansion: false
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   HI:
     prek_coverage_pct: 5
     tuition_instate: 11951
-    grant_aid_per_student: 0
+    grant_aid_per_student: 159
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   ID:
     prek_coverage_pct: 0
     tuition_instate: 8471
-    grant_aid_per_student: 0
+    grant_aid_per_student: 281
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
@@ -144,14 +150,14 @@ states:
   IL:
     prek_coverage_pct: 35
     tuition_instate: 16202
-    grant_aid_per_student: 0
+    grant_aid_per_student: 1713
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   IN:
     prek_coverage_pct: 0
     tuition_instate: 10601
-    grant_aid_per_student: 0
+    grant_aid_per_student: 1211
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
@@ -161,42 +167,42 @@ states:
   IA:
     prek_coverage_pct: 67
     tuition_instate: 11127
-    grant_aid_per_student: 0
+    grant_aid_per_student: 685
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   KS:
     prek_coverage_pct: 45
     tuition_instate: 10234
-    grant_aid_per_student: 0
+    grant_aid_per_student: 486
     medicaid_expansion: false
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   KY:
     prek_coverage_pct: 27
     tuition_instate: 12551
-    grant_aid_per_student: 0
+    grant_aid_per_student: 2353
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   LA:
     prek_coverage_pct: 34
     tuition_instate: 11927
-    grant_aid_per_student: 0
+    grant_aid_per_student: 2070
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   ME:
     prek_coverage_pct: 47
     tuition_instate: 11429
-    grant_aid_per_student: 0
+    grant_aid_per_student: 547
     medicaid_expansion: true
     paid_family_leave: true
     senior_property_relief_pct: 0.0
   MD:
     prek_coverage_pct: 38
     tuition_instate: 10800
-    grant_aid_per_student: 0
+    grant_aid_per_student: 756
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
@@ -207,42 +213,42 @@ states:
   MA:
     prek_coverage_pct: 30
     tuition_instate: 15885
-    grant_aid_per_student: 0
+    grant_aid_per_student: 975
     medicaid_expansion: true
     paid_family_leave: true
     senior_property_relief_pct: 0.0
   MI:
     prek_coverage_pct: 37
     tuition_instate: 16229
-    grant_aid_per_student: 0
+    grant_aid_per_student: 915
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   MN:
     prek_coverage_pct: 11
     tuition_instate: 14081
-    grant_aid_per_student: 0
+    grant_aid_per_student: 1244
     medicaid_expansion: true
     paid_family_leave: true
     senior_property_relief_pct: 0.0
   MS:
     prek_coverage_pct: 20
     tuition_instate: 10455
-    grant_aid_per_student: 0
+    grant_aid_per_student: 436
     medicaid_expansion: false
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   MO:
     prek_coverage_pct: 10
     tuition_instate: 10743
-    grant_aid_per_student: 0
+    grant_aid_per_student: 789
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   MT:
     prek_coverage_pct: 0
     tuition_instate: 7755
-    grant_aid_per_student: 0
+    grant_aid_per_student: 21
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
@@ -250,21 +256,21 @@ states:
   NE:
     prek_coverage_pct: 34
     tuition_instate: 9613
-    grant_aid_per_student: 0
+    grant_aid_per_student: 534
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   NV:
     prek_coverage_pct: 9
     tuition_instate: 7786
-    grant_aid_per_student: 0
+    grant_aid_per_student: 906
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   NH:
     prek_coverage_pct: 0
     tuition_instate: 18839
-    grant_aid_per_student: 0
+    grant_aid_per_student: 35
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
@@ -274,49 +280,49 @@ states:
   NJ:
     prek_coverage_pct: 34
     tuition_instate: 16577
-    grant_aid_per_student: 0
+    grant_aid_per_student: 2397
     medicaid_expansion: true
     paid_family_leave: true
     senior_property_relief_pct: 0.0
   NM:
     prek_coverage_pct: 51
     tuition_instate: 8408
-    grant_aid_per_student: 0
+    grant_aid_per_student: 3965
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   NY:
     prek_coverage_pct: 56
     tuition_instate: 9415
-    grant_aid_per_student: 0
+    grant_aid_per_student: 983
     medicaid_expansion: true
     paid_family_leave: true
     senior_property_relief_pct: 0.0
   NC:
     prek_coverage_pct: 22
     tuition_instate: 8175
-    grant_aid_per_student: 0
+    grant_aid_per_student: 629
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   ND:
     prek_coverage_pct: 9
     tuition_instate: 10889
-    grant_aid_per_student: 0
+    grant_aid_per_student: 712
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   OH:
     prek_coverage_pct: 15
     tuition_instate: 11716
-    grant_aid_per_student: 0
+    grant_aid_per_student: 473
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   OK:
     prek_coverage_pct: 66
     tuition_instate: 9654
-    grant_aid_per_student: 0
+    grant_aid_per_student: 802
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
@@ -326,35 +332,35 @@ states:
   OR:
     prek_coverage_pct: 17
     tuition_instate: 14210
-    grant_aid_per_student: 0
+    grant_aid_per_student: 1448
     medicaid_expansion: true
     paid_family_leave: true
     senior_property_relief_pct: 0.0
   PA:
     prek_coverage_pct: 26
     tuition_instate: 17909
-    grant_aid_per_student: 0
+    grant_aid_per_student: 958
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   RI:
     prek_coverage_pct: 22
     tuition_instate: 16772
-    grant_aid_per_student: 0
+    grant_aid_per_student: 167
     medicaid_expansion: true
     paid_family_leave: true
     senior_property_relief_pct: 0.0
   SC:
     prek_coverage_pct: 45
     tuition_instate: 13474
-    grant_aid_per_student: 0
+    grant_aid_per_student: 2727
     medicaid_expansion: false
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   SD:
     prek_coverage_pct: 0
     tuition_instate: 9941
-    grant_aid_per_student: 0
+    grant_aid_per_student: 177
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
@@ -362,28 +368,28 @@ states:
   TN:
     prek_coverage_pct: 20
     tuition_instate: 11837
-    grant_aid_per_student: 0
+    grant_aid_per_student: 2450
     medicaid_expansion: false
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   TX:
     prek_coverage_pct: 52
     tuition_instate: 8692
-    grant_aid_per_student: 0
+    grant_aid_per_student: 1206
     medicaid_expansion: false
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   UT:
     prek_coverage_pct: 3
     tuition_instate: 8032
-    grant_aid_per_student: 0
+    grant_aid_per_student: 61
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   VT:
     prek_coverage_pct: 76
     tuition_instate: 19223
-    grant_aid_per_student: 0
+    grant_aid_per_student: 645
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
@@ -393,28 +399,28 @@ states:
   VA:
     prek_coverage_pct: 22
     tuition_instate: 17196
-    grant_aid_per_student: 0
+    grant_aid_per_student: 2439
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   WA:
     prek_coverage_pct: 17
     tuition_instate: 8547
-    grant_aid_per_student: 0
+    grant_aid_per_student: 2421
     medicaid_expansion: true
     paid_family_leave: true
     senior_property_relief_pct: 0.0
   WV:
     prek_coverage_pct: 67
     tuition_instate: 9954
-    grant_aid_per_student: 0
+    grant_aid_per_student: 1251
     medicaid_expansion: true
     paid_family_leave: false
     senior_property_relief_pct: 0.0
   WI:
     prek_coverage_pct: 63
     tuition_instate: 9515
-    grant_aid_per_student: 0
+    grant_aid_per_student: 575
     medicaid_expansion: false
     paid_family_leave: false
     senior_property_relief_pct: 0.0
