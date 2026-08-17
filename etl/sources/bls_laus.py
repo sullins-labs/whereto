@@ -5,7 +5,10 @@ key, 50 series per call. 3,144 counties is 63 calls, which fits comfortably —
 but only because the series are batched. Anything that calls this per county
 per request needs 3,144 calls and dies on day one.
 
-Series ID: LAU + area type CN + 5-digit FIPS + 7 zeros + measure code.
+Series ID: LAU + area type CN + 5-digit FIPS + 8 zeros + measure code, which
+is 20 characters. Getting this to 19 does not error: BLS answers
+REQUEST_SUCCEEDED with "Series does not exist" per series, and an extractor
+that only reads Results.series sees an empty list rather than a failure.
 Measure 03 is the unemployment rate; 06 is labour force.
 """
 from __future__ import annotations
@@ -18,7 +21,11 @@ MEASURES = {"03": "unemployment_rate", "06": "labour_force"}
 
 
 def series_id(fips: str, measure: str) -> str:
-    return f"LAUCN{fips}0000000{measure}"
+    sid = f"LAUCN{fips}00000000{measure}"
+    # A malformed id is reported per-series inside a successful response, so
+    # assert the width here rather than discovering it as missing data.
+    assert len(sid) == 20, f"BLS series id must be 20 chars, got {len(sid)}: {sid}"
+    return sid
 
 
 def plan(fips_list: list[str]) -> int:
@@ -42,10 +49,14 @@ def extract(fips_list: list[str], year: int = 2025) -> dict[str, dict]:
         path = fetch(
             "bls_laus",
             filename=f"laus_{year}_{i//BATCH:03d}.json",
-            params=None,
-            # BLS v2 is POST-with-JSON-body, unlike everything else here.
-            # snapshot.fetch is GET-only, so this batch is written through the
-            # same archival path via a small shim rather than bypassing it.
+            # BLS v2 is POST-with-JSON-body, unlike everything else here, and
+            # rejects GET with a 405. snapshot.fetch takes json_body for this
+            # so the batch still goes through the same archival path.
+            json_body={
+                "seriesid": chunk,
+                "startyear": str(year),
+                "endyear": str(year),
+            },
             headers={"Content-Type": "application/json"},
         )
         payload = json.loads(path.read_text())

@@ -105,13 +105,21 @@ def manifest() -> list[Entry]:
     return [Entry(**json.loads(l)) for l in MANIFEST.read_text().splitlines() if l.strip()]
 
 
-def latest(source_key: str, on_or_before: str | None = None) -> Path | None:
+def latest(source_key: str, on_or_before: str | None = None,
+           name: str | None = None) -> Path | None:
     """Most recent archived copy of a source, optionally as of a given date.
 
     This is what every extractor calls. Extractors never touch the network
     directly; they ask the archive, and the archive fetches only if it must.
+
+    `name` narrows to one archived filename. Sources that issue several calls
+    need it: BLS fetches 63 batches and FBI one file per state, all under a
+    single source key, so a source-wide lookup answers every one of them with
+    whichever file happened to land first.
     """
     entries = [e for e in manifest() if e.source == source_key]
+    if name:
+        entries = [e for e in entries if Path(e.path).name == name]
     if on_or_before:
         entries = [e for e in entries if e.fetched_at[:10] <= on_or_before]
     if not entries:
@@ -145,6 +153,7 @@ def fetch(
     filename: str | None = None,
     params: dict | None = None,
     headers: dict | None = None,
+    json_body: dict | None = None,
     force: bool = False,
     max_age_days: int = 25,
     timeout: int = 120,
@@ -154,12 +163,20 @@ def fetch(
     Set force=True to re-fetch regardless. Existing snapshots are never
     overwritten — a second fetch on the same day writes a suffixed file, so
     the archive keeps both and the manifest explains the difference.
+
+    Pass json_body to POST it as JSON instead of issuing a GET. Only BLS needs
+    this: its v2 API rejects GET outright with 405, and takes the key in the
+    body rather than the query string.
     """
     src = SOURCES[source_key]
     url = url or src.url
+    name = filename or url.rstrip("/").split("/")[-1].split("?")[0] or "response"
 
     if not force:
-        existing = latest(source_key)
+        # Matched on filename as well as source. Sources that issue several
+        # calls write several files under one source key, and a source-wide
+        # lookup hands all of them whichever file landed first.
+        existing = latest(source_key, name=name)
         if existing:
             age = (datetime.now(timezone.utc) - datetime.fromtimestamp(
                 existing.stat().st_mtime, timezone.utc)).days
@@ -178,12 +195,14 @@ def fetch(
             )
         if source_key == "hud_fmr":
             hdrs["Authorization"] = f"Bearer {token}"
+        elif json_body is not None:
+            # BLS calls it registrationkey and wants it in the body.
+            json_body = {**json_body, "registrationkey": token}
         else:
             params = {**(params or {}), "key": token}
 
     outdir = RAW / source_key / _today()
     outdir.mkdir(parents=True, exist_ok=True)
-    name = filename or url.rstrip("/").split("/")[-1].split("?")[0] or "response"
     path = outdir / name
     n = 1
     while path.exists():
@@ -193,7 +212,10 @@ def fetch(
     last_error = None
     for attempt in range(4):
         try:
-            r = requests.get(url, params=params, headers=hdrs, timeout=timeout)
+            if json_body is not None:
+                r = requests.post(url, json=json_body, headers=hdrs, timeout=timeout)
+            else:
+                r = requests.get(url, params=params, headers=hdrs, timeout=timeout)
             if r.status_code == 429:
                 raise requests.HTTPError("rate limited")
             r.raise_for_status()
