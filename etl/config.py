@@ -298,18 +298,22 @@ register(Source(
     key="mit_election",
     name="MIT Election Data and Science Lab: county presidential returns",
     # The /datafile/ endpoint takes a *file* id; the DOI below it is the
-    # *dataset*, so the previous URL was the wrong shape regardless of
-    # anything else. countypres_2000-2024.tab is file 13573089 in version 20.0
-    # of doi:10.7910/DVN/VOQCHQ, and format=original asks for the upload
-    # rather than Dataverse's tab-separated conversion.
+    # *dataset*, so a bare-DOI URL is the wrong shape regardless of anything
+    # else. countypres_2000-2024.tab is file 13573089 in version 20.0 of
+    # doi:10.7910/DVN/VOQCHQ, confirmed live against the Dataverse dataset API
+    # on 2026-08-17 — the id has not moved. format=original asks for the
+    # original CSV upload rather than Dataverse's converted .tab.
     #
-    # UNVERIFIED, and deliberately recorded as such: as of 2026-08-16 Harvard
-    # Dataverse has disabled API access during an incident ("functionality
-    # such as access to our APIs, other than within a browser, is limited or
-    # disabled"), answering 202 with an empty body. The file id and version
-    # were read off the dataset page in a browser, so the shape is right, but
-    # nothing here has been exercised against a live API. Confirm on the first
-    # build after Harvard restores service.
+    # VERIFIED 2026-08-17, and the 2026-08-16 outage note above turned out to
+    # be the wrong diagnosis: Harvard's API was back, but the dataset now has
+    # a mandatory guestbook (id 458 — name/email/institution/position, no
+    # custom questions) that a bare GET to this URL cannot satisfy, so it
+    # answers 400 instead of the file. politics.py's _mit_election_signed_url
+    # POSTs the guestbook response to this same URL and follows the signed
+    # URL it returns; that two-step exchange is source-specific enough to
+    # live with the extractor rather than in the generic fetch() path. This
+    # URL is still the right thing to GET/POST — do not swap it for a
+    # persistentId form without re-checking the guestbook requirement too.
     url="https://dataverse.harvard.edu/api/access/datafile/13573089?format=original",
     # Quarterly, not monthly: returns change once a cycle plus corrections, so
     # a monthly refetch is 200 MB of nothing and four more chances to trip an
@@ -318,7 +322,7 @@ register(Source(
     role="primary",
     license_verified="2026-08-17",
     attribution_required=True,
-    verified=False,
+    verified=True,
     notes="Non-commercial. Used to derive a local lean index, not republished.",
 ))
 
