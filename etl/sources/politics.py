@@ -61,5 +61,12 @@ def lean_from_returns(rows: list[dict], years: tuple[int, ...] = (2020, 2024)) -
 
 def extract() -> dict[str, dict]:
     path = fetch("mit_election", filename="countypres.csv")
-    rows = list(csv.DictReader(io.StringIO(path.read_text(errors="replace"))))
+    text = path.read_text(errors="replace")
+    # Dataverse stores this as a .tab and serves tab-separated unless asked for
+    # the original upload, so sniff rather than assume commas. Reading a TSV
+    # with a comma reader yields one giant column and no usable rows, which
+    # would look like "the source had no data" rather than a format mismatch.
+    head = text.split("\n", 1)[0]
+    delim = "\t" if head.count("\t") > head.count(",") else ","
+    rows = list(csv.DictReader(io.StringIO(text), delimiter=delim))
     return lean_from_returns(rows)

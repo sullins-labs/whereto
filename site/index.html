@@ -708,7 +708,7 @@ function localeFromRecord(p){
       precip: p.precip_in ?? 40, sun: 50,
       stateTax: p.income_top_rate ?? 0, propTax: p.property_effective ?? 1.0,
       salesTax: p.sales_combined ?? 0, retireCode: p.retire_code ?? 2,
-      stateLean: p.state_lean ?? 50,
+      stateLean: need(p.state_lean, 50, "political reading unavailable; scored as neutral"),
       preK: p.prek_coverage_pct ?? 0, tuition: p.tuition_instate ?? 11200,
       grantAid: p.grant_aid_per_student ?? 0,
       medicaid: p.medicaid_expansion ? 1 : 0, leave: p.paid_family_leave ? 1 : 0,
@@ -724,7 +724,12 @@ function localeFromRecord(p){
     lot: need(p.lot_acres, b.lot, "lot size derived from the ring"),
     sqft: need(p.home_sqft, b.sqft, "home size derived from the ring"),
     commute: p.drive_min,
-    localLean: p.local_lean ?? p.state_lean ?? 50,
+    localLean: p.local_lean ?? need(p.state_lean, 50, "local voting record unavailable; scored as neutral"),
+    // Whether the readings above are measurements or the neutral default. A
+    // defaulted 50 renders as "mixed", which is indistinguishable from a
+    // genuinely evenly-split county unless the difference is carried through.
+    stateLeanKnown: p.state_lean != null,
+    localLeanKnown: p.local_lean != null,
     sumHigh: p.summer_high_f, winLow: p.winter_low_f,
     hazard: p.hazard_score ?? 30,
     insRate: p.insurance_rate ?? 0.005,
@@ -1317,12 +1322,14 @@ function fillSheet(r,rank,total){
     <div class="card">
       <span class="label">Political and social reading</span>
       <dl class="kv" style="margin-top:10px">
-        <dt>State policy environment</dt><dd>${LEAN(a.stateLean)}</dd>
-        <dt>This ring, locally</dt><dd>${LEAN(L.localLean)}</dd>
+        <dt>State policy environment</dt><dd>${L.stateLeanKnown?LEAN(a.stateLean):"not reported"}</dd>
+        <dt>This ring, locally</dt><dd>${L.localLeanKnown?LEAN(L.localLean):"not reported"}</dd>
         <dt>Match to what you chose (state)</dt><dd>${Math.round(p.state)}</dd>
         <dt>Match to what you chose (local)</dt><dd>${Math.round(p.local)}</dd>
       </dl>
-      <p class="note">${Math.abs(a.stateLean-L.localLean)>22
+      <p class="note">${!L.stateLeanKnown&&!L.localLeanKnown
+        ? "No political reading is available for this place, so this factor is scored as neutral everywhere and is not separating one place from another."
+        : Math.abs(a.stateLean-L.localLean)>22
         ? "The state and this ring pull in noticeably different directions. Worth knowing which of the two you actually care about."
         : "State and local readings broadly agree here."} Descriptive measures of enacted law and recorded voting, not a judgement.</p>
     </div>
