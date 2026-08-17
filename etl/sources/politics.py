@@ -47,9 +47,53 @@ honest answer is that politics is not reported, which is what need() renders.
 """
 from __future__ import annotations
 import csv, io
-from ..snapshot import fetch
+import requests
+from ..snapshot import fetch, USER_AGENT
 
 CYCLES = (2020, 2024)
+
+# Harvard Dataverse now gates this dataset behind a mandatory guestbook
+# (dataset guestbookId 458, "General guestbook": name/email/institution/
+# position, no custom questions). A bare GET to /api/access/datafile/{id}
+# answers 400 "You may not download this file without the required Guestbook
+# response", even though the file itself is CC0 and the file id (13573089,
+# still current in dataset version 20.0 as of 2026-08-17) has not changed.
+# This is not the stale-id problem the 2026-08-16 outage note anticipated.
+#
+# The documented workaround (Dataverse API guide, "Guestbooks") is a POST to
+# the same access endpoint carrying the answers, which returns a short-lived
+# signed URL to GET instead. That signed URL, not the bare datafile id, is
+# what actually varies run to run, so it is resolved fresh here rather than
+# stored in config.py as a URL.
+MIT_GUESTBOOK_RESPONSE = {
+    "name": "WhereToLive ETL",
+    "email": "support@sullinslabs.com",
+    "institution": "sullinslabs.com",
+    "position": "Developer",
+    "answers": [],
+}
+
+
+def _mit_election_signed_url() -> str:
+    """Resolve the current guestbook-gated file to a one-time signed URL.
+
+    Called on every run rather than cached: the signed URL embeds an
+    ~1-hour expiry, so caching it would only reproduce the outage this
+    exists to work around. fetch()'s own archive is still what prevents
+    re-downloading the 10MB file on every build; this just re-earns the
+    right to ask for it each time.
+    """
+    from ..config import SOURCES
+    src = SOURCES["mit_election"]
+    resp = requests.post(
+        src.url,
+        json={"guestbookResponse": MIT_GUESTBOOK_RESPONSE},
+        headers={"User-Agent": USER_AGENT},
+        timeout=60,
+    )
+    resp.raise_for_status()
+    return resp.json()["data"]["signedUrl"]
+
 
 # Columns each source must present. A 200 carrying the wrong shape is the
 # failure mode that looks most like success, so it is checked rather than
@@ -315,7 +359,8 @@ def extract(anchors: set[str] | None = None) -> dict[str, dict]:
     pipeline: a source that cannot be trusted degrades its fields to nothing
     and the interface says so, instead of publishing a number nobody checked.
     """
-    rows = _read(fetch("mit_election", filename="countypres.csv"),
+    rows = _read(fetch("mit_election", url=_mit_election_signed_url(),
+                       filename="countypres.csv"),
                  MEDSL_COLUMNS, "MEDSL", "county presidential returns")
 
     per_cycle = shares(aggregate(rows))
