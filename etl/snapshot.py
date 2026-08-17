@@ -48,6 +48,15 @@ class Entry:
     fetched_at: str
     vintage: str | None = None
     note: str = ""
+    # Carried per fetch so the archive answers licence questions on its own,
+    # without anyone having to line it up against whatever config.py says
+    # today. role in particular is what makes a validation-only source
+    # identifiable years later.
+    role: str = "primary"
+    licence: str = ""
+    licence_verified: str | None = None
+    redistributable: bool = True
+    attribution_required: bool = False
 
 
 class RateLimiter:
@@ -283,5 +292,10 @@ def fetch(
         bytes=path.stat().st_size,
         fetched_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         vintage=vintage,
+        role=src.role,
+        licence=src.licence,
+        licence_verified=src.licence_verified,
+        redistributable=src.redistributable,
+        attribution_required=src.attribution_required,
     ))
     return path
