@@ -61,5 +61,20 @@ def extract() -> dict[str, dict]:
         # because scores are percentile ranks and do not add.
         r, c = rec.get("flood_riverine_eal"), rec.get("flood_coastal_eal")
         rec["flood_eal"] = (r or 0) + (c or 0) if (r or c) else None
+
+        # The interface shows one "Flooding" bar, so it needs one score, and
+        # for the same reason the losses are added and the ranks are not, this
+        # takes the worse of the two rather than combining them. A household
+        # asking how exposed a place is to flooding is asking about whichever
+        # kind of flooding actually reaches it.
+        #
+        # Without this the field simply did not exist. The site read p.flood,
+        # the pipeline published flood_riverine and flood_coastal, and nothing
+        # joined them, so every county fell back to a hardcoded 30. Miami-Dade
+        # carried $79m of expected annual flood loss and scored the same as a
+        # county in the Arizona desert.
+        scores = [s for s in (rec.get("flood_riverine"), rec.get("flood_coastal"))
+                  if s is not None]
+        rec["flood"] = max(scores) if scores else None
         out[fips] = rec
     return out
