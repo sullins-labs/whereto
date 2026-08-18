@@ -456,16 +456,9 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
   <div class="masthead-in">
     <p class="wordmark">Where<b>to</b>live</p>
     <p class="masthead-q">The question isn't which metro. It's how far out from one, and who you'd be living among.</p>
-    <span class="chip" id="vintage">Seed v0.4 · 60 anchors × 5 rings</span>
+    <span class="chip" id="vintage">Loading dataset&hellip;</span>
   </div>
 </header>
-
-<div class="notice">
-  <div class="notice-in">
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.9" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4M8 4.6v.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-    <p style="margin:0"><b>Seed data: interface build.</b> Values are plausible placeholders shaped like the real pipeline output, so the instrument can be designed and tested. They are not sourced figures. The ETL that replaces them is specified at the bottom of the page.</p>
-  </div>
-</div>
 
 <!-- Appears only once there is a ranking to point at. Eight groups of inputs
      sit above the answer, and the answer updates on every one of them, so
@@ -1589,8 +1582,6 @@ async function boot(){
   const when=DATA_META.built_at ? new Date(DATA_META.built_at).toLocaleDateString(
     undefined,{year:"numeric",month:"short",day:"numeric"}) : "unknown";
   $("#vintage").textContent=`${DATA_META.count.toLocaleString()} places · built ${when}`;
-  const seedy=(DATA_META.warnings||[]).some(w=>/seed/i.test(w.message||""));
-  if(!seedy) document.querySelector(".notice").remove();
   renderSources();
   buildRail();
   render();
