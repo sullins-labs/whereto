@@ -18,6 +18,14 @@ from ..spine import haversine_mi
 
 INHERIT_MI = 50
 PARAMS = {"88101": "pm25", "44201": "ozone"}
+# Current primary (health-based) NAAQS vintage for each pollutant's health-relevant
+# averaging time. EPA AQS repeats one row per monitor per pollutant-standard vintage
+# (e.g. "PM25 24-hour 2006/2012/2024" all carry the same 35 ug/m3 24-hour threshold,
+# just re-issued alongside later rulemakings); using the wrong vintage, or none, either
+# undercounts or silently sums duplicate rows for the same days. Annual PM2.5 standards
+# are excluded here because their "exceedance count" is a design-value/year concept, not
+# a day count, so it isn't comparable to ozone's day-based exceedance count.
+STANDARDS = {"88101": "PM25 24-hour 2024", "44201": "Ozone 8-hour 2015"}
 
 
 def aggregate(monitors: list[dict], counties: dict[str, dict]) -> dict[str, dict]:
@@ -78,12 +86,19 @@ def extract(counties: dict[str, dict], year: int = 2025) -> dict[str, dict]:
             code = (r.get("Parameter Code") or "").strip()
             if code not in PARAMS:
                 continue
+            if (r.get("Pollutant Standard") or "").strip() != STANDARDS[code]:
+                continue
+            # Primary standards protect public health; secondary protect welfare
+            # (visibility, crops). This module's stated purpose is a health read.
+            pec = (r.get("Primary Exceedance Count") or "").strip()
+            if pec == "":
+                continue
             try:
                 monitors.append({
                     "county_fips": (r["State Code"].zfill(2) + r["County Code"].zfill(3)),
                     "pollutant": PARAMS[code],
                     "lat": float(r["Latitude"]), "lon": float(r["Longitude"]),
-                    "days_over": int(float(r.get("Days Above Standard") or 0)),
+                    "days_over": int(float(pec)),
                 })
             except (KeyError, ValueError):
                 continue
