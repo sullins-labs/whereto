@@ -82,6 +82,23 @@ COVERAGE_EXCEPTIONS = {
     # counts and could be joined in later. Until that join exists, the field
     # stays declared and genuinely null rather than backfilled with a guess.
     "pupils_per_teacher": 0.0,
+    # pcp_per_100k is null on 100% of records because no AHRF (Area Health
+    # Resources Files) extractor exists to supply primary_care_physicians
+    # counts. etl/build.py's health stage now passes None for that count
+    # deliberately (commit 0b41ad9, "Stop pinning health score to
+    # worst-case") instead of the old hardcoded 0, which used to read as a
+    # genuine zero-physicians measurement and pin the health factor to its
+    # worst possible score. The HPSA shortage-designation half of the same
+    # HRSA source (etl/sources/hrsa_health.py) is real data and is
+    # unaffected; only the provider-count half is missing. This is an
+    # ACKNOWLEDGED GAP AWAITING WORK, not a settled ceiling: once an AHRF
+    # extractor is built and wired into the health stage, this line should
+    # be deleted, not extended. Remove it only when pcp_per_100k coverage
+    # rises durably above the generic 10% floor; if an extractor lands and
+    # coverage is still at or near 0% afterward, or regresses back toward
+    # 0% after this line has been deleted, that is a real regression to
+    # investigate, not a reason to re-add or widen this exception.
+    "pcp_per_100k": 0.0,
 }
 
 # Fields allowed to be constant (or near-constant) across the dataset, with

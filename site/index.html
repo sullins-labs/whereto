@@ -1507,6 +1507,10 @@ function fillSheet(r,rank,total){
       </dl>
       <p class="note">${!L.stateLeanKnown&&!L.localLeanKnown
         ? "No political reading is available for this place, so this factor is scored as neutral everywhere and is not separating one place from another."
+        : !L.stateLeanKnown
+        ? "No state-level reading is available for this place, so only the local reading above reflects real data; no state/local comparison can be made."
+        : !L.localLeanKnown
+        ? "No local-level reading is available for this ring, so only the state reading above reflects real data; no state/local comparison can be made."
         : Math.abs(a.stateLean-L.localLean)>22
         ? "The state and this ring pull in noticeably different directions. Worth knowing which of the two you actually care about."
         : "State and local readings broadly agree here."} Descriptive measures of enacted law and recorded voting, not a judgement.</p>
