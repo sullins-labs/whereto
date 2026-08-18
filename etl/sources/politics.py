@@ -126,9 +126,39 @@ TONMCG_COLUMNS = {
 # Fairbanks-College, Juneau and Ketchikan are all anchors, so this would have
 # been wrong somewhere visible. Excluded until a district-to-borough
 # apportionment exists and is tested; until then need() renders "not reported".
+# Connecticut retired county government for statistical purposes years ago,
+# and in 2022 the Census Bureau followed by replacing the old county FIPS
+# (09001-09015) with nine planning-region FIPS (09110-09190) as the current
+# geography. The spine adopted the new codes, since that is what Census now
+# publishes. MEDSL's presidential returns still key to the old counties,
+# because that is what election administration in Connecticut is organized
+# around, and the two geographies do not nest: planning regions cut across
+# town lines in ways that do not reduce to a simple FIPS remap. A correct
+# crosswalk exists in principle -- allocate each town's votes to its
+# planning region and re-aggregate -- but that is a town-level vote
+# allocation project in its own right, not a lookup table, and it is not
+# something to improvise mid-build. It is a documented future path, the same
+# status as the Alaska district apportionment above, not a fallback to reach
+# for during a run. Until it exists and is tested, local_lean for Connecticut
+# counties is simply not reported, exactly like Alaska.
 EXCLUDED_STATES = {
     "02": ("Alaska", "returns are by state house district, and two district ids "
                      "collide with real borough ids (02013, 02020)"),
+    "09": ("Connecticut", "abolished county government for statistical purposes; "
+                          "Census replaced the old county FIPS (09001-09015) with "
+                          "nine planning-region FIPS (09110-09190) in 2022, and "
+                          "MEDSL's returns still key to the old counties, so no "
+                          "join exists"),
+    # Puerto Rico is not a Connecticut-shaped problem: there is no join to fix
+    # and no crosswalk to build. Puerto Rico does not participate in United
+    # States presidential elections, so county-level presidential returns for
+    # its 78 municipios do not exist, in MEDSL or anywhere else, and never
+    # will under this module's method. local_lean here is specifically a
+    # two-party presidential vote share; that quantity has no referent for
+    # Puerto Rico. Excluded permanently, not pending anything.
+    "72": ("Puerto Rico", "does not vote in United States presidential elections, "
+                          "so county-level presidential returns do not exist for "
+                          "its municipios and never will"),
 }
 
 # Two-party share divergence between the primary and the validation source.
@@ -222,13 +252,14 @@ def lean_from_returns(rows: list[dict], years: tuple[int, ...] = CYCLES) -> dict
     Republican-voting county in the country, 100 the most Democratic-voting;
     the midpoint is an even split, not a value judgement.
 
-    A county is only scored when every averaged cycle is present. That is what
-    keeps Connecticut honest: it moved to planning-region FIPS (09110-09190)
-    for recent vintages while older cycles use legacy county FIPS
-    (09001-09015), so the two cycles share no keys there. Averaging whatever
-    happened to join would have quietly produced a one-cycle number for
-    Connecticut and a two-cycle number everywhere else, with nothing in the
-    output saying so.
+    A county is only scored when every averaged cycle is present, which
+    guards against a partial join anywhere quietly producing a one-cycle
+    number next to a two-cycle number everywhere else, with nothing in the
+    output saying so. Connecticut never reaches this check: its
+    planning-region FIPS don't match MEDSL's legacy county FIPS in the first
+    place, so EXCLUDED_STATES filters it out upstream in aggregate() rather
+    than relying on this per-cycle guard to catch it. See EXCLUDED_STATES
+    for the reasoning.
     """
     per_cycle = shares(aggregate(rows, years))
     out = {}
