@@ -545,13 +545,13 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
 
     <div class="card" data-rail="Weather">
       <h2>Your weather</h2>
-      <p class="hint">Set the actual temperatures you want, because "warm" isn't a unit: one person's hot summer is another's mild one.</p>
+      <p class="hint">Set limits against typical conditions, not guarantees, because "warm" isn't a unit: one person's hot summer is another's mild one.</p>
       <div class="field">
-        <div class="readout"><label for="sumTarget">Ideal summer daytime high</label><b id="sumOut">80°F</b></div>
+        <div class="readout"><label for="sumTarget">Summer daytime high, don't exceed</label><b id="sumOut">80°F</b></div>
         <input type="range" class="slider" id="sumTarget" min="62" max="105" step="1" value="80">
       </div>
       <div class="field" style="margin-bottom:0">
-        <div class="readout"><label for="winTarget">Ideal winter nighttime low</label><b id="winOut">30°F</b></div>
+        <div class="readout"><label for="winTarget">Winter nighttime low, don't go under</label><b id="winOut">30°F</b></div>
         <input type="range" class="slider" id="winTarget" min="-5" max="65" step="1" value="30">
         <p class="note">City cores run a few degrees warmer than the rural edge of the same metro, most of all overnight. That's built into each ring.</p>
       </div>
@@ -1150,11 +1150,18 @@ function economics(L,s){
 }
 
 /* ---------- climate ---------- */
+/* Matched to the actual numbers the user set, because "warm" is not a
+   unit. One person's hot summer is another's mild one.
+   One-sided by deliberate design: these sliders are tolerance limits
+   against AVERAGE conditions, not ideal points, so only exceeding the
+   limit costs anything. A summer milder than the ceiling or a winter
+   warmer than the floor is neutral, not rewarded — rewarding margin
+   would just reintroduce ideal-point scoring under a new name. The
+   excess penalty stays linear (not a hard cliff) because both the
+   user's number and the county's are averages, not caps. */
 function climateRaw(L,s){
-  /* Matched to the actual numbers the user set, because "warm" is not a
-     unit. One person's hot summer is another's mild one. */
-  const dSummer=Math.abs(L.sumHigh-s.sumTarget);
-  const dWinter=Math.abs(L.winLow-s.winTarget);
+  const dSummer=Math.max(0,L.sumHigh-s.sumTarget);
+  const dWinter=Math.max(0,s.winTarget-L.winLow);
   return -(dSummer*1.0+dWinter*0.75)+L.a.sun*0.08-Math.max(0,L.a.precip-55)*0.10;
 }
 
