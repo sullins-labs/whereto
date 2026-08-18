@@ -52,19 +52,19 @@ what happened.
 
 As of August 2026, `sullinslabs.com` is a single Astro site deployed on
 **Netlify**, and this app ships as static files inside it at
-**`/whereto/`**. Nameservers point at Netlify, not Cloudflare. There is no
-separate Cloudflare Pages project, and creating one on this domain would
-collide with the live site.
+**`/whereto/`**. The domain is registered and DNS-hosted at **Porkbun**
+(nameservers salvador/curitiba/maceio/fortaleza.ns.porkbun.com), with MX
+records pointed at Fastmail. Netlify is only the site host, not the
+nameserver. There is no separate Cloudflare Pages project, and creating one
+on this domain would collide with the live site.
 
 Live URL: <https://sullinslabs.com/whereto/index.html>
 
-The zero-cost argument below still holds, and for the same reason: the site
-is purely static, so nothing in the stack meters per request. Netlify's free
-tier does include a bandwidth allowance rather than being uncapped the way
-Cloudflare Pages was, so that is the one number worth watching. At 100 GB a
-month against a roughly 3 MB cold visit, it takes on the order of 30,000
-visits a month to reach it, and the failure mode is being asked to upgrade
-rather than an unexpected bill.
+The zero-cost argument below still holds in that nothing in the stack meters
+per request the way a server would. But Netlify's free tier is metered by a
+**monthly credit allowance**, not the bandwidth-only model this doc used to
+describe, and the failure mode is worse than "asked to upgrade." See "What
+this costs" below.
 
 ### How the app reaches production now
 
@@ -129,9 +129,21 @@ Nothing, and structurally so.
 | GitHub Actions | unlimited, public repos | 7 min/month, 29 in an annual month |
 | GitHub Releases | 2 GB per asset | 0.05 GB/month, split by source |
 | Repository | 1 GB soft limit | ~3 MB, snapshots are never committed |
-| Netlify | 100 GB/month bandwidth | ~2 deploys/month, built locally |
+| Netlify | monthly credit allowance | ~2 deploys/month, built locally |
 | Every data API | free with a key | 126 of 450 daily calls at the tightest point |
 
-Two things would break it: making the repo private, and monetising the site,
-at which point Open-Meteo's and MIT's non-commercial tiers stop applying. Both
-sources sit behind swappable adapters for exactly that reason.
+Netlify's free tier used to be described here purely in terms of bandwidth.
+It no longer works that way: Netlify meters usage (builds, deploys, requests)
+against a **credit allowance that resets on a monthly cycle**. On 2026-08-18
+the account ran out of credit for the cycle after three production deploys
+in a single day — normal cadence is roughly monthly, not daily. The result
+was not a bill. It was **production deploys pausing entirely** until the
+cycle reset (2026-08-25), plus a warning that if *operational* credits are
+also exhausted, **published sites get suspended**, which is a step worse
+than a paused deploy. The practical rule: batch related changes into one
+production deploy instead of deploying per change.
+
+Two things would break the rest of it: making the repo private, and
+monetising the site, at which point Open-Meteo's and MIT's non-commercial
+tiers stop applying. Both sources sit behind swappable adapters for exactly
+that reason.
