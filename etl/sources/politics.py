@@ -161,6 +161,17 @@ EXCLUDED_STATES = {
                           "its municipios and never will"),
 }
 
+# South Dakota's Shannon County was renamed Oglala Lakota County and its FIPS
+# changed from the retired 46113 to the current 46102 in a 2015 Census
+# renumbering -- a one-to-one rename with no boundary change, unlike
+# Connecticut's planning regions above. MEDSL's presidential returns still key
+# this county to 46113, while the spine (and tonmcg, the validation source)
+# already use 46102, so a bare FIPS join drops it silently rather than
+# excluding it deliberately. Unambiguous, so it is remapped here rather than
+# added to EXCLUDED_STATES. Applies to MEDSL only; tonmcg already reports
+# 46102 and must not be remapped a second time.
+MEDSL_FIPS_CROSSWALK = {"46113": "46102"}
+
 # Two-party share divergence between the primary and the validation source.
 WARN_PP, FAIL_PP, FAIL_SHARE = 2.0, 5.0, 0.01
 MIN_COUNTIES_PER_CYCLE = 3_000
@@ -209,6 +220,7 @@ def aggregate(rows: list[dict], cycles: tuple[int, ...] = CYCLES) -> dict:
         if party not in ("DEMOCRAT", "REPUBLICAN"):
             continue
         fips = _fips(r.get("county_fips"))
+        fips = MEDSL_FIPS_CROSSWALK.get(fips, fips)
         if fips[:2] in EXCLUDED_STATES:
             continue
         try:

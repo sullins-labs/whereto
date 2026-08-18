@@ -98,8 +98,17 @@ def _stages(offline: bool, as_of: str | None):
         return epa_aqs.extract(ctx["spine"])
 
     def health(**_):
+        # No AHRF extractor exists yet, so per-county provider counts are
+        # genuinely unknown, not zero. Passing None here (rather than 0)
+        # keeps that distinction alive through hrsa_health.build(), which
+        # must emit pcp_per_100k/mental_health_per_100k as null rather than
+        # a literal 0.0 -- otherwise every county's health factor reads as
+        # "zero physicians", the worst possible score, instead of falling
+        # back to the ring-derived estimate the site uses for real gaps.
+        # The HPSA shortage-designation half is real HRSA data and does not
+        # depend on these counts.
         ratios = {f: {"population": r.get("population") or 0,
-                      "primary_care_physicians": 0, "mental_health_providers": 0}
+                      "primary_care_physicians": None, "mental_health_providers": None}
                   for f, r in ctx["spine"].items()}
         return hrsa_health.extract(ratios)
 

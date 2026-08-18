@@ -55,6 +55,7 @@ jobs:
           python tests/test_pipeline.py
           python tests/test_extractors.py
           python tests/test_politics.py
+          python tests/test_contract_coverage.py
 
       # Snapshots go to a release rather than the repo. Release assets are
       # free and effectively unlimited; committing a few hundred megabytes of

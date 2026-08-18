@@ -40,11 +40,15 @@ def build(ratios: dict[str, dict], hpsa: list[dict]) -> dict[str, dict]:
         pop = r.get("population") or 0
         if pop <= 0:
             continue
-        pcp = r.get("primary_care_physicians") or 0
-        mh = r.get("mental_health_providers") or 0
+        # Unknown (None) is not the same as a measured zero -- an unknown
+        # count must stay null through the ratio, not collapse to 0.0 via
+        # `or 0`, or the interface would treat a genuine data gap as the
+        # worst possible reading instead of falling back honestly.
+        pcp = r.get("primary_care_physicians")
+        mh = r.get("mental_health_providers")
         rec = {
-            "pcp_per_100k": round(pcp / pop * 100_000, 1),
-            "mental_health_per_100k": round(mh / pop * 100_000, 1),
+            "pcp_per_100k": round(pcp / pop * 100_000, 1) if pcp is not None else None,
+            "mental_health_per_100k": round(mh / pop * 100_000, 1) if mh is not None else None,
         }
         d = designations.get(fips, {})
         if d:
