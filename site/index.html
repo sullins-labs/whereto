@@ -1289,7 +1289,7 @@ function signature(r,s){
     const x=i*(bw+gap),y=dev>=0?mid-h:mid,off=s.weights[f.k]===0;
     let c=dev>=0?"var(--primary)":"var(--neutral-bar)";
     if(v<32&&s.weights[f.k]>=3)c="var(--deficit)";
-    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw}" height="${h.toFixed(1)}" rx="1.5" fill="${c}" opacity="${off?0.18:1}" style="animation-delay:${i*18}ms"><title>${f.label}: ${Math.round(v)}</title></rect>`;
+    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw}" height="${h.toFixed(1)}" rx="1.5" fill="${c}" opacity="${off?0.18:1}" style="animation-delay:${i*18}ms"><title>${esc(f.label)}: ${Math.round(v)}</title></rect>`;
   });
   return `<svg class="sig" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Fit signature">
     <line x1="0" y1="${mid}" x2="${W}" y2="${mid}" stroke="var(--outline-soft)" stroke-width="1"/>${bars}</svg>`;
@@ -1315,7 +1315,7 @@ const LEAN=v=>v>=78?"solidly progressive":v>=60?"leaning progressive":v>=41?"mix
 function weightRows(list){
   return list.map(f=>`
     <div class="wrow">
-      <span class="wlabel">${f.label}${f.hint?`<em>${f.hint}</em>`:""}</span>
+      <span class="wlabel">${esc(f.label)}${f.hint?`<em>${esc(f.hint)}</em>`:""}</span>
       <div class="seg" role="group" aria-label="Importance of ${f.label}">
         ${[0,1,2,3,4,5].map(v=>`<button data-f="${f.k}" data-v="${v}" aria-pressed="${state.weights[f.k]===v}">${v}</button>`).join("")}
       </div>
@@ -1379,11 +1379,11 @@ function render(){
   $("#rows").innerHTML=visible.map((r,i)=>{
     const L=r.L,lo=r.econ.leftover,chips=weakChips(r,state);
     const budget=lo<0?`<span class="warn">${money(-lo)}/yr short</span>`:`${money(lo)}/yr left over`;
-    const sub=`${L.a.st} · ${acres(L.lot)} · ${L.commute} min to center · ${budget}`
+    const sub=`${esc(L.a.st)} · ${acres(L.lot)} · ${L.commute} min to center · ${budget}`
       +(chips.length?` · <span class="warn">weak: ${chips.map(c=>c.label.toLowerCase()).join(", ")}</span>`:"");
     return `<button class="row" data-id="${L.id}" aria-current="${state.open===L.id}" style="animation-delay:${Math.min(i*14,300)}ms">
       <span class="rank ${i<3?"top":""}">${String(i+1).padStart(2,"0")}</span>
-      <span class="place"><span class="nm">${L.title}</span><span class="sub">${sub}</span></span>
+      <span class="place"><span class="nm">${esc(L.title)}</span><span class="sub">${sub}</span></span>
       ${signature(r,state)}
       <span class="fit"><span class="n">${Math.round(r.fit)}</span>
       <span class="bar"><i style="width:${Math.round(r.fit)}%"></i></span></span>
@@ -1412,7 +1412,7 @@ function fillSheet(r,rank,total){
     let c=above?"var(--primary)":"var(--neutral-bar)";
     if(v<32&&w>=3)c="var(--deficit)";
     return `<div class="frow ${w===0?"off":""}">
-      <span class="fl">${f.label}<em>${w===0?"not counted":"weight "+w}</em></span>
+      <span class="fl">${esc(f.label)}<em>${w===0?"not counted":"weight "+w}</em></span>
       <span class="track"><i style="left:${above?50:50-half}%;width:${half}%;background:${c}"></i><u></u></span>
       <span class="fv">${Math.round(v)}</span></div>`;
   }).join("");
@@ -1538,7 +1538,7 @@ function fillSheet(r,rank,total){
     ${L.caveats && L.caveats.length ? `<div class="card">
       <span class="label">What this record does not know</span>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:12.5px;color:var(--on-var);line-height:1.6">
-        ${L.caveats.map(c=>`<li>${c}</li>`).join("")}
+        ${L.caveats.map(c=>`<li>${esc(c)}</li>`).join("")}
       </ul>
       <p class="note">Carried through from the pipeline. A modeled value and a measured one are not the same thing, so the record says which is which.</p>
     </div>` : ""}

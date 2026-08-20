@@ -9,12 +9,18 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
     timeout-minutes: 90   # cold build is ~70 min; routine runs are ~7
+    # Scoped here rather than left at the workflow level. This is the only
+    # job in the workflow and it both pushes the refreshed dataset and
+    # uploads the release asset, so it still needs write — but a job added
+    # later (e.g. a test-only job) will not inherit it by default.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with: { lfs: false }
@@ -60,11 +66,63 @@ jobs:
       # Snapshots go to a release rather than the repo. Release assets are
       # free and effectively unlimited; committing a few hundred megabytes of
       # federal zip files every month is how a repo becomes unusable.
+      #
+      # Only sources config.py marks redistributable=True may leave the repo
+      # this way. That set is read from etl/config.py at run time rather than
+      # hardcoded here: a denylist of directory names goes stale the instant
+      # a new non-redistributable source is registered, which is exactly how
+      # snapshot-2026-08 ended up shipping Zillow and MIT election data. The
+      # config is the only place that decision is allowed to live.
       - name: Archive snapshots to release
         if: success()
         run: |
+          set -euo pipefail
           TAG="snapshot-$(date +%Y-%m)"
-          tar czf snapshots.tar.gz data/raw
+
+          REDIST=$(python -c "
+from etl.config import SOURCES
+for k, s in sorted(SOURCES.items()):
+    if s.redistributable:
+        print(k)
+")
+
+          DIRS=()
+          EXCLUDED=""
+          for dir in data/raw/*/; do
+            name=$(basename "$dir")
+            if echo "$REDIST" | grep -qxF "$name"; then
+              DIRS+=("data/raw/$name")
+            else
+              EXCLUDED="$EXCLUDED $name"
+            fi
+          done
+
+          if [ -n "$EXCLUDED" ]; then
+            echo "Excluded non-redistributable source(s) from snapshot:$EXCLUDED"
+          fi
+          if [ "${#DIRS[@]}" -eq 0 ]; then
+            echo "::error::No redistributable source directories found under data/raw; refusing to publish an empty snapshot"
+            exit 1
+          fi
+
+          tar czf snapshots.tar.gz "${DIRS[@]}"
+
+          # Fail loud rather than silently filter: re-open the archive and
+          # assert every entry belongs to a declared redistributable source.
+          # A bug above should stop the build, not ship a smaller version of
+          # the same mistake.
+          BAD=""
+          for entry in $(tar tzf snapshots.tar.gz | cut -d/ -f3 | sort -u); do
+            [ -z "$entry" ] && continue
+            if ! echo "$REDIST" | grep -qxF "$entry"; then
+              BAD="$BAD $entry"
+            fi
+          done
+          if [ -n "$BAD" ]; then
+            echo "::error::Non-redistributable source(s) present in snapshot archive:$BAD"
+            exit 1
+          fi
+
           gh release create "$TAG" snapshots.tar.gz --notes "Source snapshots $(date +%Y-%m)" || \
           gh release upload "$TAG" snapshots.tar.gz --clobber
         env:
