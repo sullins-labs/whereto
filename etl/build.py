@@ -14,7 +14,7 @@ import argparse, json, sys, traceback
 from datetime import datetime, timezone
 
 from . import snapshot
-from .config import DIST, CONTRACT_VERSION, license_table
+from .config import DIST, CONTRACT_VERSION, license_table, SOURCES
 from .contract import envelope, check_envelope
 from .validate import check_dataset, report, BLOCKING, REQUIRED
 
@@ -77,12 +77,14 @@ def _stages(offline: bool, as_of: str | None):
         # which validate.py requires, so an unrelated HUD outage blocked
         # publication of a field that had been fetched successfully.
         merged: dict[str, dict] = {}
-        for name, table_fn in (("zillow", housing_src.zillow),
+        for name, table_fn in (("zillow_zhvi", housing_src.zillow),
                                ("hud_fmr", housing_src.hud_fmr)):
             try:
                 table = table_fn()
             except Exception as exc:                 # noqa: BLE001
-                ctx.setdefault("degraded", []).append(f"housing/{name}: {exc}")
+                ctx.setdefault("degraded", []).append(
+                    {"stage": "housing", "source": name,
+                     "error": f"{type(exc).__name__}: {exc}"})
                 print(f"    ! housing/{name} degraded — {exc}")
                 continue
             for f, v in table.items():
@@ -157,6 +159,11 @@ def run(offline: bool = False, as_of: str | None = None) -> int:
             if "--traceback" in sys.argv:
                 traceback.print_exc()
 
+    degraded_sources = sorted({d["source"] for d in ctx.get("degraded", [])})
+    for key in degraded_sources:
+        if key not in SOURCES:
+            print(f"    ! degraded source {key!r} is not a registered SOURCES key — check for a name/key mismatch")
+
     from .transform import run as transform_run
     records = transform_run(assemble(results))
     records, withheld = _withhold_uncovered(records)
@@ -199,6 +206,7 @@ def run(offline: bool = False, as_of: str | None = None) -> int:
         warnings=[f.__dict__ for f in findings],
         failures=failures,
         withheld=withheld,
+        degraded_sources=degraded_sources,
     )
     _assert_no_validation_sources(payload)
     envelope_problems = check_envelope(payload)

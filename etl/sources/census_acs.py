@@ -32,7 +32,7 @@ def extract(vintage: int | None = None) -> dict[str, dict]:
         params={"get": "NAME," + ",".join(varmap), "for": "county:*"},
     )
 
-    rows = json.loads(path.read_text())
+    rows = json.loads(path.read_text(encoding="utf-8"))
     header, body = rows[0], rows[1:]
     idx = {name: i for i, name in enumerate(header)}
 

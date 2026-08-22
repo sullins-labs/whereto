@@ -878,7 +878,16 @@ async function loadData(){
     warnings: payload.warnings || [],
     failures: payload.stage_failures || {},
     sources: payload.sources || [],
-    withheld: payload.withheld || []
+    withheld: payload.withheld || [],
+    /* degradedKeys is the real signal, keyed by the ETL's source key, once
+       the pipeline publishes payload.degraded_sources. degradedNames is a
+       client-side stand-in for runs where that field is absent — see
+       deriveDegradedSourceNames() below. Only one of the two is ever
+       populated; renderSources() checks both so it works either way. */
+    degradedKeys: new Set(payload.degraded_sources || []),
+    degradedNames: payload.degraded_sources
+      ? null
+      : deriveDegradedSourceNames(payload.sources || [], payload.places || [])
   };
   LOCALES = payload.places.map(localeFromRecord);
   LOCALES.forEach(L=>{ L.crimeIdx = L.crimeIdx ?? null; });
@@ -961,6 +970,48 @@ const SOURCE_STAGE=[
   [/zillow/i,                         "housing"],
 ];
 
+/* TRANSITIONAL, remove on the 2026-09-01 run: today's served data
+   (site/data/places.json) predates payload.degraded_sources, so there is no
+   server-side signal that a source silently fell back. This reconstructs the
+   same conclusion client-side from the one field each source alone is
+   responsible for — general on purpose, so the next source that goes quiet
+   surfaces the same way HUD does here, without anyone touching this file.
+   Once the pipeline emits degraded_sources, DATA_META.degradedNames stays
+   null and this whole block goes dead; delete it and
+   deriveDegradedSourceNames() then. The note text is optional per entry —
+   only HUD has approved wording as of 2026-08-22, so only HUD gets a
+   tooltip; the others still surface as "using fallback" with no tooltip
+   rather than inventing copy nobody has signed off on. */
+const SOURCE_OWNED_FIELD=[
+  [/crime data explorer|fbi/i,        "violent_per_100k", null],
+  [/fair market rents|hud/i,          "rent_monthly",
+    "HUD did not return data this run; rent figures come from Census ACS instead."],
+  [/national risk index|fema/i,       "hazard_score", null],
+  [/common core of data|nces/i,       "spend_per_pupil", null],
+  [/shortage areas|hrsa/i,            "pcp_per_100k", null],
+  [/air quality|epa/i,                "air_days_over", null],
+];
+/* Below this share of records carrying a value in the field a source alone
+   owns, call the source degraded. Set well under 1.0 on purpose: ordinary
+   sparse coverage (a few counties an agency never reports to) is not the
+   same failure as a source going down and something else covering for it —
+   see crime_coverage, which already has a legitimate, non-zero null rate in
+   healthy data. */
+const FALLBACK_MIN_POPULATION=0.5;
+
+function deriveDegradedSourceNames(sources, places){
+  const found=new Map();
+  if(!places.length) return found;
+  for(const s of sources){
+    const hit=SOURCE_OWNED_FIELD.find(([re])=>re.test(s.name||""));
+    if(!hit) continue;
+    const [,field,note]=hit;
+    const populated=places.reduce((n,p)=>n+(p[field]!=null?1:0),0);
+    if(populated/places.length < FALLBACK_MIN_POPULATION) found.set(s.name, note);
+  }
+  return found;
+}
+
 function renderSources(){
   const body=$("#srcbody");
   if(!body || !DATA_META) return;
@@ -970,15 +1021,23 @@ function renderSources(){
     const stage=hit?hit[1]:null;
     const down=stage&&failed[stage];
     /* An unverified source is one the pipeline has never successfully
-       exercised, which is a different thing from one that failed today. */
+       exercised, which is a different thing from one that failed today.
+       bridgeNote is the transitional client-side path (see
+       deriveDegradedSourceNames above); it is undefined once degradedNames
+       goes back to null on 2026-09-01 and degradedKeys carries the real
+       signal instead. */
+    const bridgeNote=DATA_META.degradedNames && DATA_META.degradedNames.get(s.name);
+    const stale=(s.key && DATA_META.degradedKeys.has(s.key)) || bridgeNote!==undefined;
+    const note=s.fallback_note || bridgeNote;
     const state=down ? ["no","not available"]
+              : stale ? ["part","using fallback"]
               : s.verified===false ? ["part","unverified"]
               : ["yes","in use"];
     const lic=s.redistributable===false?"lic rs":"lic ok";
     return `<tr><td>${esc(s.name)}</td><td>${esc(s.cadence||"")}</td>`+
            `<td class="${lic}">${esc(s.license||"")}`+
            `${s.attribution_required?' <span class="mono" style="font-size:11px">attribution</span>':""}</td>`+
-           `<td class="src-${state[0]}">${state[1]}</td></tr>`;
+           `<td class="src-${state[0]}"${stale && note ? ` title="${esc(note)}"` : ""}>${state[1]}</td></tr>`;
   });
   body.innerHTML=rows.join("")||
     `<tr><td colspan="4">No source list published with this build.</td></tr>`;

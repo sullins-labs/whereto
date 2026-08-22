@@ -55,6 +55,9 @@ class Source:
     # configured and still never have been exercised, and those are different
     # states worth telling apart.
     verified: bool = True
+    # Shown in the site's source table when this source failed its fetch but
+    # another source covered for it — see build.py's ctx["degraded"].
+    fallback_note: str | None = None
 
 
 SOURCES: dict[str, Source] = {}
@@ -173,6 +176,7 @@ register(Source(
     key_style="bearer",
 
     notes="Effective 1 October each year; published August-September.",
+    fallback_note="HUD did not return data this run; rent figures come from Census ACS instead.",
 ))
 
 register(Source(
@@ -380,6 +384,7 @@ def license_table() -> list[dict]:
     drift out of sync with what the pipeline actually pulled."""
     return [
         {
+            "key": s.key,
             "name": s.name,
             "cadence": s.cadence,
             "license": s.license,
@@ -388,6 +393,7 @@ def license_table() -> list[dict]:
             "license_verified": s.license_verified,
             "attribution_required": s.attribution_required,
             "verified": s.verified,
+            "fallback_note": s.fallback_note,
         }
         # Validation sources are deliberately absent from the published table:
         # listing one next to the sources the numbers came from would imply it

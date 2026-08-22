@@ -21,16 +21,28 @@ PLACE_FIELDS: dict[str, tuple[type | tuple, bool, str]] = {
     "density":         ((int, float), False, "people per square mile"),
     "land_sq_mi":      ((int, float), False, ""),
     "drive_min":       (int,   True,  "to the anchor center"),
+    "drive_estimated": (bool,  False, "True when drive_min is estimated, not routed"),
+
+    "cbsa":            (str,   False, "CBSA code, present only when the county sits in one"),
+    "cbsa_name":       (str,   False, "Census CBSA delineation title"),
+    "rucc":            (int,   False, "USDA ERS Rural-Urban Continuum Code"),
 
     "median_home_value": ((int, float), True,  ""),
     "rent_monthly":      ((int, float), False, "HUD FMR 2-bed, else ACS median gross rent"),
     "median_household_income": ((int, float), False, ""),
+    "median_gross_rent": ((int, float), False, "ACS median gross rent; rent_monthly's fallback input"),
+    "median_age":        ((int, float), False, "ACS median age"),
+    "bachelors":         (int,  False, "ACS count, population 25+ with a bachelor's degree"),
+    "housing_units":     (int,  False, "ACS total housing units"),
+    "commute_total":     (int,  False, "ACS aggregate travel time to work, minutes"),
     "rpp":               ((int, float), True,  "cost of living, US = 100"),
     "rpp_source":        (str,   False, "metro | state fallback"),
 
     "summer_high_f":   ((int, float), True,  "July mean daily maximum"),
     "winter_low_f":    ((int, float), True,  "January mean daily minimum"),
     "precip_in":       ((int, float), False, ""),
+    "climate_stations":   (int,  False, "NOAA stations averaged for this county"),
+    "climate_nearest_mi": ((int, float), False, "distance to the nearest station used"),
 
     "hazard_score":    ((int, float), False, "composite, 0-100"),
     "wildfire":        ((int, float), False, ""),
@@ -39,6 +51,17 @@ PLACE_FIELDS: dict[str, tuple[type | tuple, bool, str]] = {
     "tornado":         ((int, float), False, ""),
     "earthquake":      ((int, float), False, ""),
     "heat_wave":       ((int, float), False, ""),
+    "strong_wind":     ((int, float), False, "FEMA NRI strong wind hazard score"),
+    "wildfire_eal":     ((int, float), False, "FEMA NRI expected annual loss, dollars"),
+    "flood_eal":        ((int, float), False, "FEMA NRI expected annual loss, riverine + coastal combined"),
+    "hurricane_eal":     ((int, float), False, "FEMA NRI expected annual loss, dollars"),
+    "tornado_eal":       ((int, float), False, "FEMA NRI expected annual loss, dollars"),
+    "earthquake_eal":    ((int, float), False, "FEMA NRI expected annual loss, dollars"),
+    "heat_wave_eal":     ((int, float), False, "FEMA NRI expected annual loss, dollars"),
+    "strong_wind_eal":   ((int, float), False, "FEMA NRI expected annual loss, dollars"),
+    "risk_score":         ((int, float), False, "FEMA NRI composite RISK_SCORE"),
+    "social_vulnerability": ((int, float), False, "FEMA NRI SOVI_SCORE"),
+    "community_resilience": ((int, float), False, "FEMA NRI RESL_SCORE"),
     "insurance_rate":  ((int, float), False, "share of home value per year"),
     "insurance_basis": (str,   False, "FEMA expected annual loss | modeled from hazard score"),
 
@@ -48,12 +71,28 @@ PLACE_FIELDS: dict[str, tuple[type | tuple, bool, str]] = {
     "crime_coverage":    ((int, float), False, "0-1 share of population whose agencies reported"),
 
     "spend_per_pupil":   ((int, float), False, ""),
+    "spend_vs_us_pct":   ((int, float), False, "spend_per_pupil as a percentage of the US figure"),
     "pupils_per_teacher": ((int, float), False, ""),
+    "school_districts":   (int,  False, "NCES CCD, count of districts touching this county"),
+    "school_enrollment":  (int,  False, "NCES CCD, students"),
     "pcp_per_100k":      ((int, float), False, "primary care physicians"),
+    "mental_health_per_100k": ((int, float), False, "HRSA mental health providers"),
+    "hpsa_designated":   (bool,  False, "HRSA Health Professional Shortage Area on file"),
+    "hpsa_note":         (str,   False, "shown when no HPSA designation is on file"),
     "air_days_over":     ((int, float), False, "days above the national standard"),
+    "ozone_days_over":   ((int, float), False, "EPA AQS, days ozone exceeded the standard"),
+    "pm25_days_over":    ((int, float), False, "EPA AQS, days PM2.5 exceeded the standard"),
+    "air_inherited":     (bool,  False, "True when air quality is inherited from a monitor outside the county"),
+    "air_source_mi":     ((int, float), False, "distance to the monitor air quality was inherited from"),
 
     "local_lean":      ((int, float), False, "two-party presidential share, a position not a rating"),
+    "local_lean_cycles": (int, False, "presidential cycles averaged into local_lean"),
+    "local_lean_note":   (str, False, "fixed explanatory note accompanying local_lean"),
     "state_lean":      ((int, float), False, "enacted-policy position"),
+
+    "labour_force":      ((int, float), False, "BLS LAUS civilian labor force"),
+    "unemployment_rate": ((int, float), False, "BLS LAUS"),
+    "labour_vintage":    (str,   False, "BLS LAUS period the above two are drawn from, YYYY-MM"),
 
     "income_top_rate":     ((int, float), False, ""),
     "sales_combined":      ((int, float), False, ""),
@@ -117,7 +156,8 @@ def check_envelope(payload: dict) -> list[str]:
 
 def envelope(places: list[dict], sources: list[dict], built_at: str,
              warnings: list | None = None, failures: dict | None = None,
-             withheld: list | None = None) -> dict:
+             withheld: list | None = None,
+             degraded_sources: list[str] | None = None) -> dict:
     """The published payload. Build it here and nowhere else.
 
     This existed and was never called: build.py assembled the same dict by
@@ -134,5 +174,6 @@ def envelope(places: list[dict], sources: list[dict], built_at: str,
         "stage_failures": failures or {},
         "warnings": warnings or [],
         "withheld": withheld or [],
+        "degraded_sources": sorted(degraded_sources or []),
         "places": places,
     }
