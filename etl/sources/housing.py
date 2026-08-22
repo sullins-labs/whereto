@@ -1,48 +1,33 @@
 """Zillow research indices and HUD Fair Market Rents.
 
-Both are county-level and both are one file. The care needed here is legal
-rather than technical: Zillow's terms permit deriving from the research files
-but not republishing them. transform.py enforces that — what leaves this
-pipeline is a value per county, never the series.
+The care needed here is legal rather than technical: Zillow's terms permit
+deriving from the research files but not republishing them. This module used
+to copy the current-month ZHVI cell straight into a published field
+(home_value), which is not "deriving" anything — it is the source figure
+itself, and it shipped with no attribution anywhere in the app. A 2026-08-22
+licensing review ruled that not permitted. Josh's call (of three options
+offered) was to drop ZHVI from published output entirely and rely on Census
+ACS's median_home_value (B25077_001E), a public-domain 5-year estimate
+present for every county — not to build a compliant derived index instead.
+So: zillow() below still fetches and archives the file, so the snapshot
+stays current if a compliant derived index is ever built, but it merges
+nothing from it into the record. What actually leaves this pipeline for
+home value is ACS's figure, untouched, set in census_acs.py.
 """
 from __future__ import annotations
-import csv, io
 from ..snapshot import fetch
 
 
 def zillow() -> dict[str, dict]:
-    path = fetch("zillow_zhvi", filename="county_zhvi.csv")
-    rows = list(csv.DictReader(io.StringIO(path.read_text(errors="replace"))))
-    if not rows:
-        return {}
+    """Fetch and archive Zillow's ZHVI file. Merge nothing from it.
 
-    # Month columns are ISO dates; everything else is metadata. Taking the last
-    # column blindly breaks whenever Zillow appends a field, so months are
-    # identified by shape.
-    months = sorted(k for k in rows[0] if len(k) == 10 and k[4] == "-" and k[7] == "-")
-    if not months:
-        return {}
-    latest, year_ago = months[-1], months[max(0, len(months) - 13)]
-
-    out = {}
-    for r in rows:
-        st = (r.get("StateCodeFIPS") or "").zfill(2)
-        co = (r.get("MunicipalCodeFIPS") or "").zfill(3)
-        if len(st) != 2 or len(co) != 3:
-            continue
-        try:
-            now = float(r[latest])
-        except (KeyError, ValueError, TypeError):
-            continue
-        rec = {"home_value": round(now), "home_value_month": latest}
-        try:
-            then = float(r[year_ago])
-            if then:
-                rec["home_value_yoy_pct"] = round((now / then - 1) * 100, 1)
-        except (KeyError, ValueError, TypeError):
-            pass
-        out[st + co] = rec
-    return out
+    See the module docstring for why: republishing the current-month cell,
+    even a single value rather than the whole series, is still Zillow's
+    figure verbatim, and the license requires attribution this app never
+    carried. Nothing here is derived from the fetched file today.
+    """
+    fetch("zillow_zhvi", filename="county_zhvi.csv")
+    return {}
 
 
 def hud_fmr(year: int = 2026) -> dict[str, dict]:

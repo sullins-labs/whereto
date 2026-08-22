@@ -181,9 +181,17 @@ register(Source(
     url="https://files.zillowstatic.com/research/public_csvs/zhvi/County_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv",
     cadence="monthly", license="Attribution; no redistribution",
     redistributable=False,
+    attribution_required=True,
     notes=(
         "Free to download and derive from, but the terms forbid republishing "
-        "the files. We emit derived index values only, never the series."
+        "the files without crediting Zillow Group on every page that shows "
+        "a value from them. A 2026-08-22 licensing review found the "
+        "current-month cell shipping verbatim as home_value with no credit "
+        "anywhere in the app — not permitted. As of that review we emit "
+        "nothing derived from this source; published home value is Census "
+        "ACS's median_home_value instead. This entry, and the fetch in "
+        "housing.py, stay so a compliant derived index can be built later "
+        "without re-deriving the license research."
     ),
 ))
 
