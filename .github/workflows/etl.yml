@@ -73,55 +73,20 @@ jobs:
       # a new non-redistributable source is registered, which is exactly how
       # snapshot-2026-08 ended up shipping Zillow and MIT election data. The
       # config is the only place that decision is allowed to live.
+      #
+      # The derivation, directory partitioning, tar build and re-verification
+      # live in scripts/archive_snapshots.py rather than inline here. An
+      # earlier version embedded that Python as a `python -c "..."` heredoc
+      # in this run block; its flush-left inline lines de-indented below the
+      # block scalar and silently corrupted the rest of this YAML file. A
+      # standalone script removes the trap instead of re-indenting around it.
       - name: Archive snapshots to release
         if: success()
         run: |
           set -euo pipefail
           TAG="snapshot-$(date +%Y-%m)"
 
-          REDIST=$(python -c "
-from etl.config import SOURCES
-for k, s in sorted(SOURCES.items()):
-    if s.redistributable:
-        print(k)
-")
-
-          DIRS=()
-          EXCLUDED=""
-          for dir in data/raw/*/; do
-            name=$(basename "$dir")
-            if echo "$REDIST" | grep -qxF "$name"; then
-              DIRS+=("data/raw/$name")
-            else
-              EXCLUDED="$EXCLUDED $name"
-            fi
-          done
-
-          if [ -n "$EXCLUDED" ]; then
-            echo "Excluded non-redistributable source(s) from snapshot:$EXCLUDED"
-          fi
-          if [ "${#DIRS[@]}" -eq 0 ]; then
-            echo "::error::No redistributable source directories found under data/raw; refusing to publish an empty snapshot"
-            exit 1
-          fi
-
-          tar czf snapshots.tar.gz "${DIRS[@]}"
-
-          # Fail loud rather than silently filter: re-open the archive and
-          # assert every entry belongs to a declared redistributable source.
-          # A bug above should stop the build, not ship a smaller version of
-          # the same mistake.
-          BAD=""
-          for entry in $(tar tzf snapshots.tar.gz | cut -d/ -f3 | sort -u); do
-            [ -z "$entry" ] && continue
-            if ! echo "$REDIST" | grep -qxF "$entry"; then
-              BAD="$BAD $entry"
-            fi
-          done
-          if [ -n "$BAD" ]; then
-            echo "::error::Non-redistributable source(s) present in snapshot archive:$BAD"
-            exit 1
-          fi
+          python scripts/archive_snapshots.py data/raw snapshots.tar.gz
 
           gh release create "$TAG" snapshots.tar.gz --notes "Source snapshots $(date +%Y-%m)" || \
           gh release upload "$TAG" snapshots.tar.gz --clobber
