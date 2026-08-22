@@ -160,6 +160,25 @@ def run(offline: bool = False, as_of: str | None = None) -> int:
     from .transform import run as transform_run
     records = transform_run(assemble(results))
     records, withheld = _withhold_uncovered(records)
+
+    # contract.check() is PLACE_FIELDS's own gate on what may leave this
+    # pipeline, and until now nothing called it — check_envelope() below
+    # validates the wrapper, not the fields inside each place. A field only
+    # had to be a valid Python dict key to reach the published file, which is
+    # how Zillow's unattributed home_value shipped starting 2026-08-18.
+    from .contract import check as contract_check, PLACE_FIELDS
+    contract_problems = sorted({p for r in records for p in contract_check(r)})
+    if contract_problems:
+        undeclared = sorted({f for r in records for f in set(r) - set(PLACE_FIELDS)})
+        print(f"\nBlocked on the output contract — {len(contract_problems)} distinct problem(s):")
+        if undeclared:
+            print(f"  {len(undeclared)} undeclared field(s): {', '.join(undeclared)}")
+        for p in contract_problems:
+            if not p.startswith("unexpected fields:"):
+                print(f"  {p}")
+        print("Nothing written — the previous build stays live.")
+        return 1
+
     findings, stats = check_dataset(records)
     print("\n" + report(findings, stats))
 

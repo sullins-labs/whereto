@@ -94,7 +94,7 @@ def derive(rec: dict) -> dict:
     h = hazard_composite(rec)
     if h is not None:
         rec["hazard_score"] = h
-    rate, basis = insurance_rate(h, rec.get("eal_total"), rec.get("home_value"))
+    rate, basis = insurance_rate(h, rec.get("eal_total"), rec.get("median_home_value"))
     if rate is not None:
         rec["insurance_rate"] = rate
         rec["insurance_basis"] = basis
@@ -105,8 +105,12 @@ def derive(rec: dict) -> dict:
 
     # Housing cost the household actually meets, so the interface is not left
     # rebuilding it. Rent falls back to HUD where Zillow has no county.
+    # median_home_value is Census ACS's B25077_001E, set upstream by
+    # census_acs.py, and is left alone here — it used to be overwritten by
+    # Zillow's current-month ZHVI whenever a county had one, which is how a
+    # source marked non-redistributable ended up determining a published
+    # figure. See housing.py: nothing derived from Zillow reaches this record.
     rec["rent_monthly"] = rec.get("fmr_2br") or rec.get("median_gross_rent")
-    rec["median_home_value"] = rec.get("home_value") or rec.get("median_home_value")
 
     if rec.get("spend_per_pupil"):
         rec["spend_vs_us_pct"] = round(rec["spend_per_pupil"] / US["spend_per_pupil"] * 100)
