@@ -5,18 +5,30 @@ costs and what its license permits, and a module here that turns the archived
 bytes into county records. Nothing here touches the network directly; modules
 ask `snapshot.fetch`, and the archive fetches only when it must.
 
-## Politics, and why it is still pointed at an endpoint that is down
+## Politics, and the outage this extractor was built to survive
+
+**Update 2026-08-17: fixed, `verified=True`.** The paragraphs below describe
+the 2026-08-16 outage and the design principle it forced; they're kept
+because the principle still governs this extractor, but the outage itself is
+resolved — don't read this section as current status. What was actually
+wrong wasn't the API-disabled incident first suspected: Harvard's API was
+back, but the dataset gained a mandatory guestbook (id 458) that a bare GET
+can't satisfy, so it answered `400`. `politics.py`'s
+`_mit_election_signed_url()` POSTs the guestbook response and follows the
+signed URL it returns. Verified live 2026-08-17: 3,111 counties scored. See
+`etl/config.py`'s `mit_election` registration for the current, authoritative
+state (`verified=True`, `license_verified="2026-08-17"`).
 
 The politics extractor takes county presidential returns from the **MIT
 Election Data and Science Lab**, published on Harvard Dataverse. As of
-2026-08-17 Dataverse has API access disabled during an incident, by their own
+2026-08-16 Dataverse had API access disabled during an incident, by their own
 banner: *"some functionality (such as access to our APIs, other than within a
-browser) is limited or disabled"*. Requests answer `202` with an empty body.
+browser) is limited or disabled"*. Requests answered `202` with an empty body.
 
-The source stays pointed there, marked `verified=False`, and politics renders
-**"not reported"** in the interface in the meantime.
+The source stayed pointed there, marked `verified=False`, and politics
+rendered **"not reported"** in the interface in the meantime.
 
-That is a deliberate choice, and it is the whole design principle of this
+That was a deliberate choice, and it is the whole design principle of this
 directory in one decision: **data integrity outranks availability.** The
 canonical county-level file for 2000-2024 is cleaned, versioned, DOI'd and
 licensed in exactly one place. If it cannot be reached, the honest answer is

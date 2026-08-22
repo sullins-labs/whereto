@@ -124,11 +124,21 @@ All free, all one form:
 
 ## Status
 
-Implemented: config registry, archival snapshot layer with checksummed
-manifest and persisted rate limiting, geography spine with ring derivation,
-validation gates, orchestrator, CI workflow, Census ACS and FEMA NRI
-extractors, curated tax and services schema.
+As of 2026-08-22, all 15 sources in `etl/config.py` have extractors
+(`etl/sources/`) and a full local build succeeds (~3,135 of ~3,144 counties).
+CI (`.github/workflows/etl.yml`) has run exactly once, on 2026-08-01, before
+API-key secrets existed, and failed; no run has happened since the secrets
+were added on 2026-08-17. The next scheduled run is 2026-09-01 — see
+`CLAUDE.md` for why that run matters (it's the first to exercise the
+license-filtered snapshot archive step added after the 2026-08-20 exposure
+incident).
 
-To do: the remaining extractors, all of which follow the two-file pattern in
-`etl/sources/`; OSRM isochrones to replace the estimated drive times; and the
-tract-level split for heterogeneous counties.
+Known, tracked gaps (see `tests/test_contract_coverage.py`, the source of
+truth for these): `state_lean` is declared in the contract but no extractor
+has ever populated it; `pcp_per_100k` needs an AHRF extractor that doesn't
+exist yet. Crime data (FBI CDE) is permanently unavailable upstream, by
+design, not a to-do. HUD's FMR feed (`fmr_*` fields, rent figures) has been
+returning empty upstream; `rent_monthly` is currently 100% ACS fallback.
+
+Remaining known-open work: OSRM isochrones to replace estimated drive times,
+and the tract-level split for heterogeneous counties.
