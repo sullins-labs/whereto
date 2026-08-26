@@ -135,7 +135,8 @@ def derive(rec: dict) -> dict:
 
     # Bulky intermediates the browser has no use for.
     for k in ("spine_notes", "eal_total", "flood_riverine", "flood_coastal",
-              "flood_riverine_eal", "flood_coastal_eal", "lat", "lon"):
+              "flood_riverine_eal", "flood_coastal_eal", "lat", "lon",
+              "fmr_1br", "fmr_2br", "fmr_3br"):
         rec.pop(k, None)
     return rec
 

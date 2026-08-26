@@ -8,6 +8,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from etl.build import assemble
 from etl.transform import run as transform
 from etl.validate import check_dataset, report
+from etl import contract
 
 # a spine of three counties across three rings, plus partial source coverage —
 # deliberately imperfect, because a fixture where every join succeeds proves
@@ -40,8 +41,8 @@ results = {
  # crime present for two, suppressed for one — the realistic case
  "crime": {"42003": {"violent_per_100k": 291.7, "property_per_100k": 2083.3, "crime_coverage": 0.96},
            "42019": {"crime_coverage": 0.41, "crime_suppressed": "coverage 41% below 80% floor"}},
- "housing":{"42003": {"home_value": 219000, "fmr_2br": 1180},
-            "42019": {"home_value": 291000, "fmr_2br": 1240}},
+ "housing":{"42003": {"home_value": 219000, "fmr_1br": 950, "fmr_2br": 1180, "fmr_3br": 1420},
+            "42019": {"home_value": 291000, "fmr_1br": 1010, "fmr_2br": 1240, "fmr_3br": 1480}},
  "air":   {"42003": {"air_days_over": 12, "air_inherited": False},
            "42019": {"air_days_over": 12, "air_inherited": True, "air_source_mi": 31.4}},
 }
@@ -67,6 +68,15 @@ assert "violent_per_100k" not in but, "suppressed crime must not appear"
 alg = next(r for r in records if r["fips"] == "42003")
 assert alg["hazard_score"] < pet["hazard_score"], "rural Montana carries more wildfire risk"
 assert any("spans core and rural" in c for c in alg["caveats"])
+# raw HUD FMR keys are intermediates consumed into rent_monthly; they must
+# never survive into the published record, or the contract gate rejects the
+# build the day HUD's API comes back
+assert alg["rent_monthly"] == 1180, "rent_monthly should derive from fmr_2br"
+for k in ("fmr_1br", "fmr_2br", "fmr_3br"):
+    assert k not in alg, f"{k} is a raw HUD intermediate and must be stripped"
+contract_problems = contract.check(alg)
+fmr_leak = [p for p in contract_problems if "fmr_" in p]
+assert not fmr_leak, f"raw FMR keys leaked past the contract gate: {fmr_leak}"
 # small fixture must trip the dataset-size gate
 assert stats["blocking"] > 0, "a three-county dataset must not be publishable"
 print("\nall assertions passed")
