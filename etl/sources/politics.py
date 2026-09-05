@@ -303,14 +303,22 @@ def _read(path, expected: set, source: str, where: str) -> list[dict]:
     return list(reader)
 
 
-def _tonmcg_shares(cycles: tuple[int, ...] = CYCLES) -> dict[str, dict[int, float]]:
-    """Validation source. Never returned to the caller, never scored."""
+def _tonmcg_shares(cycles: tuple[int, ...] = CYCLES,
+                   stats: dict | None = None) -> dict[str, dict[int, float]]:
+    """Validation source. Never returned to the caller, never scored.
+
+    stats, if given, records (fetched, kept) for tonmcg_returns: fetched is
+    every row read across both cycles, kept is the number of distinct
+    counties that ended up with at least one cycle's share.
+    """
     out: dict[str, dict[int, float]] = {}
+    fetched = 0
     for year in cycles:
         rows = _read(fetch("tonmcg_returns",
                            url=f"{_tonmcg_base()}/{year}_US_County_Level_Presidential_Results.csv",
                            filename=f"tonmcg_{year}.csv"),
                      TONMCG_COLUMNS[year], "tonmcg", str(year))
+        fetched += len(rows)
         key = "combined_fips" if year == 2016 else "county_fips"
         for r in rows:
             fips = _fips(r.get(key))
@@ -322,6 +330,8 @@ def _tonmcg_shares(cycles: tuple[int, ...] = CYCLES) -> dict[str, dict[int, floa
                 continue
             if d + g > 0:
                 out.setdefault(fips, {})[year] = d / (d + g)
+    if stats is not None:
+        stats["tonmcg_returns"] = (fetched, len(out))
     return out
 
 
@@ -406,12 +416,17 @@ def check_sanity(per_cycle: dict[str, dict[int, float]],
         raise GateFailure(f"sanity gate: {len(bad)} shares outside 0-1, e.g. {bad[:5]}")
 
 
-def extract(anchors: set[str] | None = None) -> dict[str, dict]:
+def extract(anchors: set[str] | None = None,
+           stats: dict | None = None) -> dict[str, dict]:
     """Fetch, gate, and return local lean. Any gate failure raises.
 
     Every gate here blocks rather than warns, which matches the rest of the
     pipeline: a source that cannot be trusted degrades its fields to nothing
     and the interface says so, instead of publishing a number nobody checked.
+
+    stats, if given, is filled in with (fetched, kept) for both mit_election
+    and tonmcg_returns — the two SOURCES keys this stage actually invokes —
+    for build.py's per-source instrumentation.
     """
     rows = _read(fetch("mit_election", url=_mit_election_signed_url(),
                        filename="countypres.csv"),
@@ -420,7 +435,11 @@ def extract(anchors: set[str] | None = None) -> dict[str, dict]:
     per_cycle = shares(aggregate(rows))
     check_sanity(per_cycle)
     coverage = check_coverage(per_cycle, anchors)
-    summary = cross_check(per_cycle, _tonmcg_shares())
+    tonmcg = _tonmcg_shares(stats=stats)
+    summary = cross_check(per_cycle, tonmcg)
 
     print(f"    politics: {coverage}, cross-check {summary}")
-    return lean_from_returns(rows)
+    lean = lean_from_returns(rows)
+    if stats is not None:
+        stats["mit_election"] = (len(rows), len(lean))
+    return lean

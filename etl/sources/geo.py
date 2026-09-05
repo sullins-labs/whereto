@@ -35,10 +35,15 @@ def _gazetteer() -> dict[str, County]:
     return out
 
 
-def _cbsa(counties: dict[str, County]) -> None:
+def _cbsa(counties: dict[str, County]) -> tuple[int, int]:
     """Census publishes this as .xlsx with a title block above the header and
     footnotes below it. Both have to be skipped by content, not by a fixed row
-    offset, because the number of footnotes changes between vintages."""
+    offset, because the number of footnotes changes between vintages.
+
+    Returns (fetched, kept): fetched is the number of real data rows in the
+    delineation file (footnotes and the title block already excluded); kept
+    is how many of those rows matched a county already in the gazetteer.
+    """
     import openpyxl
     path = fetch("census_cbsa_delineation", filename="cbsa_delineation.xlsx")
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
@@ -58,6 +63,7 @@ def _cbsa(counties: dict[str, County]) -> None:
     if header is None:
         raise RuntimeError("CBSA delineation: header row not found; layout changed")
 
+    kept = 0
     for vals in rows:
         fips = vals[header["FIPS State Code"]].zfill(2) + vals[header["FIPS County Code"]].zfill(3)
         c = counties.get(fips)
@@ -66,12 +72,18 @@ def _cbsa(counties: dict[str, County]) -> None:
         c.cbsa = vals[header["CBSA Code"]]
         c.cbsa_name = vals[header["CBSA Title"]]
         c.central = vals[header["Central/Outlying County"]].lower().startswith("central")
+        kept += 1
+    return len(rows), kept
 
 
-def _rucc(counties: dict[str, County]) -> None:
+def _rucc(counties: dict[str, County]) -> tuple[int, int]:
+    """Returns (fetched, kept): fetched is every row read from the RUCC csv;
+    kept is how many matched a county and carried a usable RUCC value."""
     path = fetch("usda_rucc", filename="rucc.csv")
     text = path.read_text(encoding="utf-8-sig", errors="replace")
+    fetched, kept = 0, 0
     for row in csv.DictReader(io.StringIO(text)):
+        fetched += 1
         fips = (row.get("FIPS") or row.get("FIPStxt") or "").zfill(5)
         c = counties.get(fips)
         if not c:
@@ -80,14 +92,29 @@ def _rucc(counties: dict[str, County]) -> None:
         if attr in ("RUCC_2023", "RUCC_2013", ""):
             try:
                 c.rucc = int(float(row.get("Value") or row.get("RUCC_2023") or 9))
+                kept += 1
             except (TypeError, ValueError):
                 pass
+    return fetched, kept
 
 
-def extract(population: dict[str, int] | None = None) -> dict[str, dict]:
+def extract(population: dict[str, int] | None = None,
+           stats: dict | None = None) -> dict[str, dict]:
+    """stats, if given, is a mutable dict that this fills in with
+    {source_key: (fetched, kept)} for each of the three SOURCES keys this
+    extractor touches — used by build.py for per-source instrumentation.
+    Optional and side-effect-only so every other caller is unaffected.
+    """
     counties = _gazetteer()
-    _cbsa(counties)
-    _rucc(counties)
+    cbsa_fetched, cbsa_kept = _cbsa(counties)
+    rucc_fetched, rucc_kept = _rucc(counties)
+    if stats is not None:
+        # The gazetteer is the spine itself: every row it parses becomes a
+        # county, with no join or filter to fall short of, so fetched and
+        # kept are the same number by construction, not by approximation.
+        stats["census_gazetteer"] = (len(counties), len(counties))
+        stats["census_cbsa_delineation"] = (cbsa_fetched, cbsa_kept)
+        stats["usda_rucc"] = (rucc_fetched, rucc_kept)
 
     # Rings need population, which comes from ACS. Passing it in rather than
     # importing keeps the dependency one-directional.

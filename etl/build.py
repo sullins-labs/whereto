@@ -41,6 +41,31 @@ STAGES = [
     ("curated",   "tax and services statute",              ("spine",)),
 ]
 
+# Which etl.config.SOURCES keys each STAGES entry actually invokes, read off
+# each extractor's fetch() call sites rather than assumed from the stage
+# name. A STAGE can wrap zero SOURCES keys (curated pulls from local YAML,
+# never the network), one, or several — housing and spine are the two where
+# a single stage number was hiding more than one source's health, which is
+# the whole reason per-source instrumentation exists. fbi_cde is listed even
+# though crime.extract() currently raises before ever calling fetch(): it is
+# still a registered SOURCES key and must still get a line, always yes on
+# degraded.
+STAGE_SOURCES: dict[str, list[str]] = {
+    "acs":      ["census_acs5"],
+    "spine":    ["census_gazetteer", "census_cbsa_delineation", "usda_rucc"],
+    "rpp":      ["bea_rpp"],
+    "labour":   ["bls_laus"],
+    "housing":  ["zillow_zhvi", "hud_fmr"],
+    "hazard":   ["fema_nri"],
+    "climate":  ["noaa_normals"],
+    "air":      ["epa_aqs"],
+    "crime":    ["fbi_cde"],
+    "health":   ["hrsa_hpsa"],
+    "schools":  ["nces_ccd"],
+    "politics": ["mit_election", "tonmcg_returns"],
+    "curated":  [],
+}
+
 
 def _stages(offline: bool, as_of: str | None):
     """Bound the extractors into callables the orchestrator can run uniformly.
@@ -53,6 +78,14 @@ def _stages(offline: bool, as_of: str | None):
     from .sources import fema_nri, noaa_normals, epa_aqs, hrsa_health, nces_ccd
     from .sources import politics, curated, fbi_cde
     ctx: dict = {}
+    # Filled in by extractors that can cheaply tell fetched from kept for an
+    # individual SOURCES key (currently spine's three and politics' two —
+    # see STAGE_SOURCES). A stage whose closure never writes here falls back,
+    # in the reporting loop below, to its own record count standing in for
+    # both, which is honest rather than approximated for a single-source
+    # stage with no internal filtering, and stated as an approximation where
+    # it isn't.
+    ctx["source_stats"] = {}
 
     def acs(**_):
         ctx["acs"] = census_acs.extract()
@@ -60,7 +93,7 @@ def _stages(offline: bool, as_of: str | None):
 
     def spine(**_):
         pop = {f: r.get("population") or 0 for f, r in ctx.get("acs", {}).items()}
-        ctx["spine"] = geo.extract(population=pop)
+        ctx["spine"] = geo.extract(population=pop, stats=ctx["source_stats"])
         return ctx["spine"]
 
     def rpp(**_):
@@ -86,7 +119,15 @@ def _stages(offline: bool, as_of: str | None):
                     {"stage": "housing", "source": name,
                      "error": f"{type(exc).__name__}: {exc}"})
                 print(f"    ! housing/{name} degraded — {exc}")
+                ctx["source_stats"][name] = (0, 0)
                 continue
+            # zillow() always returns {} by design (see housing.py) — it
+            # archives the file but merges nothing, a licensing decision, not
+            # a failure, so fetched=kept=0 here means "correctly withheld",
+            # not "broke". Neither extractor distinguishes a raw row count
+            # from what it hands back, so fetched==kept for both is the
+            # honest number, not an invented one.
+            ctx["source_stats"][name] = (len(table), len(table))
             for f, v in table.items():
                 merged.setdefault(f, {}).update(v)
         if not merged:
@@ -128,7 +169,8 @@ def _stages(offline: bool, as_of: str | None):
         # Ring 0 is the core county of each anchor metro, so these are the
         # places the interface is actually built around.
         "politics": lambda **_: politics.extract(
-            anchors={f for f, r in ctx["spine"].items() if r.get("ring") == 0}),
+            anchors={f for f, r in ctx["spine"].items() if r.get("ring") == 0},
+            stats=ctx["source_stats"]),
         "curated": curated_stage,
     }, ctx
 
@@ -163,6 +205,34 @@ def run(offline: bool = False, as_of: str | None = None) -> int:
     for key in degraded_sources:
         if key not in SOURCES:
             print(f"    ! degraded source {key!r} is not a registered SOURCES key — check for a name/key mismatch")
+
+    # Per-source instrumentation. One line per etl.config.SOURCES key that
+    # STAGE_SOURCES says this run actually invokes — not one per STAGES
+    # entry — because a stage number is not granular enough to tell a bad
+    # BEA/BLS key (200 OK, no usable data) apart from a source that is
+    # working normally: both would otherwise show up only as "housing
+    # degraded" or "rpp — 3222 records" with no way to see which underlying
+    # source produced the shortfall. This is why the 2026-10-01 scheduled
+    # run, the first real exercise of the rotated CENSUS/BLS/BEA keys, needs
+    # to be greppable at this granularity rather than at the stage level.
+    degraded_source_set = set(degraded_sources)
+    for stage_key, _desc, _needs in STAGES:
+        for src_key in STAGE_SOURCES.get(stage_key, []):
+            if src_key not in SOURCES:
+                print(f"    ! {src_key!r} in STAGE_SOURCES[{stage_key!r}] is not a "
+                      f"registered SOURCES key — check for a typo")
+                continue
+            ran = stage_key in results
+            fetched, kept = ctx["source_stats"].get(src_key, (0, 0))
+            if ran and src_key not in ctx["source_stats"]:
+                # This stage has exactly one SOURCES key behind it and the
+                # extractor does not distinguish a raw fetch count from what
+                # it hands back, so the stage's own record count is the
+                # honest number for both, not an invented split.
+                fetched = kept = len(results[stage_key])
+            degraded = (src_key in degraded_source_set) or (stage_key in failures) or not ran
+            print(f"STAGE {src_key} fetched={fetched} kept={kept} "
+                  f"degraded={'yes' if degraded else 'no'}")
 
     from .transform import run as transform_run
     records = transform_run(assemble(results))
@@ -222,6 +292,12 @@ def run(offline: bool = False, as_of: str | None = None) -> int:
     print(f"\nWrote {out} — {len(records)} places, {out.stat().st_size/1024:.0f} kB")
     if failures:
         print(f"Degraded: {', '.join(failures)} — affected fields are marked in the output.")
+    # Explicit, greppable end-of-run line: total published, how many were
+    # withheld for lacking required coverage, and which sources degraded —
+    # conflated before into `failures` keys, which mixed whole-stage
+    # failures with partial degradation and never surfaced withheld at all.
+    print(f"SUMMARY places={len(records)} withheld={len(withheld)} "
+          f"degraded_sources={degraded_sources}")
     return 0
 
 
