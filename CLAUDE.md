@@ -47,15 +47,17 @@ only ever been exercised by hand, never by the cron itself. Treat that run
 as unverified in production until it's been watched.
 
 The job: restores the `data/raw` archive from cache, verifies checksums,
-builds (`python -m etl.build`, using five API-key secrets — see below), runs
+builds (`python -m etl.build`, using four API-key secrets — see below), runs
 the full test suite, archives redistributable-only source snapshots to a
 GitHub Release, and commits `data/dist/places.json` back to `main` as the
 `etl` bot user. It does not sync to sullinslabs or deploy — see "Publishing"
 above.
 
-Five secrets, all free-tier API keys, live in GitHub Settings → Secrets
+Four secrets, all free-tier API keys, live in GitHub Settings → Secrets
 (never in files): `CENSUS_API_KEY`, `BLS_API_KEY`, `BEA_API_KEY`,
-`HUD_API_TOKEN`, `FBI_CDE_API_KEY`. Register instructions are in `SETUP.md`.
+`FBI_CDE_API_KEY`. Register instructions are in `SETUP.md`. `HUD_API_TOKEN`
+is not needed — the real HUD request is the unauthenticated bulk FMR
+spreadsheet, not the per-county API (see the HUD trap note below).
 
 ## Licensing is load-bearing, not a note somebody remembers
 
