@@ -187,6 +187,23 @@ def check_baseline_regression(records: list[dict], withheld: list[dict] | None =
                            "present in the last published build, absent from this one, "
                            "and not withheld with a reason"))
 
+    # A county published in the last build that is withheld in this one is
+    # not automatically wrong -- Census suppression genuinely moves a handful
+    # of counties between vintages -- but it needs a record either way, and a
+    # run that withholds a large slice of the previously-published country is
+    # more likely a broken join than a suppression wave. 25 is well above
+    # normal churn (28% growth on the baseline's 88 withheld) and far below
+    # the count-floor's ~334-county masking headroom.
+    newly_withheld = set(base_places) & withheld_fips
+    for f in sorted(newly_withheld):
+        out.append(Finding(WARNING, f, "withheld",
+                           "present in the last published build, withheld in this one"))
+    if len(newly_withheld) > 25:
+        out.append(Finding(BLOCKING, "dataset", "withheld",
+                           f"{len(newly_withheld)} counties newly withheld versus the last "
+                           f"published build; above the 25-county threshold for ordinary "
+                           f"Census suppression churn"))
+
     # General form of the BLS-empty-series case: any field, compared to its
     # own null rate in the last build, not just the handful REQUIRED/BOUNDS
     # already watch.
