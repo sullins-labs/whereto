@@ -8,7 +8,9 @@ Gates are either BLOCKING (build fails) or WARNING (build proceeds, note is
 attached to the record and surfaced in the interface).
 """
 from __future__ import annotations
+import json
 from dataclasses import dataclass
+from pathlib import Path
 
 BLOCKING, WARNING = "blocking", "warning"
 
@@ -93,7 +95,7 @@ def check_record(rec: dict) -> list[Finding]:
     return out
 
 
-def check_dataset(records: list[dict]) -> tuple[list[Finding], dict]:
+def check_dataset(records: list[dict], withheld: list[dict] | None = None) -> tuple[list[Finding], dict]:
     findings: list[Finding] = []
     for r in records:
         findings.extend(check_record(r))
@@ -120,8 +122,85 @@ def check_dataset(records: list[dict]) -> tuple[list[Finding], dict]:
         if records and filled / len(records) < 0.90:
             findings.append(Finding(BLOCKING, "dataset", f,
                                     f"only {filled/len(records):.0%} of counties have a value"))
+
+    # withheld is only ever supplied by the real build (build.py has it in
+    # scope at the call site); test fixtures that call check_dataset(records)
+    # with one argument opt out of this entirely, which is deliberate — a
+    # three-county fixture has nothing in common with the live baseline and
+    # comparing it would only produce noise.
+    if withheld is not None:
+        findings.extend(check_baseline_regression(records, withheld))
+
     stats["blocking"] = sum(1 for f in findings if f.level == BLOCKING)
     return findings, stats
+
+
+# The published dataset already sitting at data/dist/places.json *is* the
+# baseline. Reading it is a local file read, not a network fetch or a lookup
+# into build history — every run has exactly one thing to compare itself
+# against: what is live right now. Kept as its own function so tests can
+# swap in a baseline dict without touching disk.
+def _load_baseline(path: Path | None = None) -> dict:
+    if path is None:
+        from .config import DIST
+        path = DIST / "places.json"
+    if not path.exists():
+        # A missing baseline is not "nothing to compare, skip" — that would
+        # make this whole guard a no-op on exactly the machine where it was
+        # never exercised. Missing must block as loudly as any other gate.
+        return {"missing": True}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {
+        "places": {r["fips"]: r for r in data.get("places", []) if r.get("fips")},
+        "withheld": {w.get("fips") for w in data.get("withheld", []) if w.get("fips")},
+    }
+
+
+# A single bad API key returning HTTP 200 with an empty series (the BLS
+# failure mode this guard exists for) takes a field from its normal fill
+# rate straight to 0%, a jump of tens of percentage points. Ordinary
+# month-to-month drift — a newly incorporated county, one vintage arriving a
+# few days late — moves a null rate by low single digits. 15 points sits
+# well above the second and far below the first.
+NULL_RATE_REGRESSION_FLOOR = 0.15
+
+
+def check_baseline_regression(records: list[dict], withheld: list[dict] | None = None,
+                               baseline: dict | None = None) -> list[Finding]:
+    out: list[Finding] = []
+    if baseline is None:
+        baseline = _load_baseline()
+    if baseline.get("missing"):
+        out.append(Finding(BLOCKING, "dataset", "baseline",
+                           "no baseline found at data/dist/places.json; cannot check this "
+                           "build for a silently dropped county or a source that went null"))
+        return out
+
+    base_places = baseline["places"]
+    withheld_fips = {w.get("fips") for w in (withheld or [])}
+    current_fips = {r.get("fips") for r in records}
+
+    # A county in the last published build that is neither in this build nor
+    # recorded as withheld has no explanation on file — it just disappeared.
+    for f in sorted(set(base_places) - current_fips - withheld_fips):
+        out.append(Finding(BLOCKING, f, "fips",
+                           "present in the last published build, absent from this one, "
+                           "and not withheld with a reason"))
+
+    # General form of the BLS-empty-series case: any field, compared to its
+    # own null rate in the last build, not just the handful REQUIRED/BOUNDS
+    # already watch.
+    if base_places and records:
+        fields = {k for r in base_places.values() for k in r if k != "fips"}
+        base_n, cur_n = len(base_places), len(records)
+        for field in sorted(fields):
+            base_rate = sum(1 for r in base_places.values() if r.get(field) is None) / base_n
+            cur_rate = sum(1 for r in records if r.get(field) is None) / cur_n
+            if cur_rate - base_rate > NULL_RATE_REGRESSION_FLOOR:
+                out.append(Finding(BLOCKING, "dataset", field,
+                                   f"null rate rose from {base_rate:.0%} to {cur_rate:.0%} versus "
+                                   f"the last published build; a source likely returned nothing"))
+    return out
 
 
 def report(findings: list[Finding], stats: dict) -> str:

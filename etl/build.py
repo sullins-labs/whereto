@@ -256,7 +256,7 @@ def run(offline: bool = False, as_of: str | None = None) -> int:
         print("Nothing written — the previous build stays live.")
         return 1
 
-    findings, stats = check_dataset(records)
+    findings, stats = check_dataset(records, withheld)
     print("\n" + report(findings, stats))
 
     if stats["blocking"]:
