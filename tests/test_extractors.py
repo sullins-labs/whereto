@@ -46,4 +46,30 @@ assert res["21015"]["crime_coverage"] > 0.65, "nine months of 130k of 140k peopl
 assert "violent_per_100k" not in res["13121"], "22% coverage must suppress"
 assert "crime_suppressed" in res["13121"]
 print("\n  22%-coverage county suppressed rather than published — correct")
+
+# ---- HUD FMR: config must not gate the unauthenticated bulk endpoint ----
+#
+# housing.py's hud_fmr() always fetches HUD's public bulk spreadsheet
+# (huduser.gov/portal/datasets/fmr/...), never this Source's tokenised
+# per-county url. snapshot.fetch() looks up needs_key/key_style from the
+# *registered* Source regardless of which url a call actually requests, so a
+# needs_key here would (a) attach a superfluous Authorization: Bearer header
+# to an unauthenticated public request whenever HUD_API_TOKEN happens to be
+# set, and (b) hard-fail with "hud_fmr needs HUD_API_TOKEN in the
+# environment" the day that token is unset or removed, even though the real
+# request needs no credential at all. This regression-tests the config
+# declaration directly rather than mocking a network call: it is the
+# declaration, not the request, that was wrong.
+from etl.config import SOURCES as _SOURCES
+
+_hud = _SOURCES["hud_fmr"]
+assert not _hud.needs_key, (
+    f"hud_fmr.needs_key is {_hud.needs_key!r}, expected falsy — the actual "
+    f"fetch in housing.py's hud_fmr() is unauthenticated; see etl/config.py"
+)
+assert _hud.key_style != "bearer", (
+    f"hud_fmr.key_style is {_hud.key_style!r} — no key_style should imply "
+    f"an Authorization header on a source with no needs_key"
+)
+print("\n  hud_fmr Source declares no needs_key/bearer style — correct")
 print("\nall assertions passed")

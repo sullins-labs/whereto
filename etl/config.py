@@ -170,11 +170,29 @@ register(Source(
 register(Source(
     key="hud_fmr",
     name="HUD Fair Market Rents",
+    # This is HUD's tokenised per-county REST endpoint, which this pipeline
+    # does NOT call. housing.py's hud_fmr() always overrides this url with
+    # the bulk public spreadsheet (huduser.gov/portal/datasets/fmr/...),
+    # which needs no key: fetching 3,144 counties one at a time against
+    # HUD's 60-calls/minute limit would take 52 minutes, versus seconds for
+    # the one file. Left here, unused by any fetch, as a record of the
+    # endpoint that exists in principle — see housing.py's hud_fmr()
+    # docstring — not as a URL any request is ever made against. Do not read
+    # this as the request this source issues.
     url="https://www.huduser.gov/hudapi/public/fmr/data/{fips}",
     cadence="annual", license="Public domain", redistributable=True,
-    needs_key="HUD_API_TOKEN",
-    key_style="bearer",
-
+    # No needs_key/key_style here on purpose. The real request (the bulk
+    # spreadsheet above) is unauthenticated. Declaring HUD_API_TOKEN/bearer
+    # on this Source used to make snapshot.fetch() attach a superfluous
+    # Bearer header to that unauthenticated request when the token was set,
+    # and would have made an unauthenticated fetch hard-fail with "needs
+    # HUD_API_TOKEN in the environment" the day the token is unset/removed —
+    # both wrong, because fetch() gates on the registered Source's
+    # needs_key/key_style regardless of which url is actually requested.
+    # Confirmed 2026-09-05 that this had not yet caused an incident (the one
+    # real 2026-09-01 failure was upstream, an empty response after 4
+    # retries), but HUD_API_TOKEN not needing this source's real request was
+    # not visible anywhere fetch() looked.
     notes="Effective 1 October each year; published August-September.",
     fallback_note="HUD did not return data this run; rent figures come from Census ACS instead.",
 ))
