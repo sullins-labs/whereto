@@ -102,8 +102,10 @@ assert summary, "more than 25 newly-withheld counties must also BLOCK with a dat
 # Wiring: check_dataset(records, withheld) must actually invoke
 # check_baseline_regression() when withheld is not None. Every test above
 # calls check_baseline_regression() directly, which would still pass even if
-# the two-argument call site in build.py silently reverted to one argument
-# and disabled this whole guard under a green suite.
+# check_dataset's own `if withheld is not None` dispatch silently stopped
+# calling it. Note this does NOT cover build.py:259's call site itself --
+# a revert there to the one-argument check_dataset(records) form would
+# still slip through a green suite, since nothing here calls build.py.
 # ---------------------------------------------------------------------------
 from unittest.mock import patch
 
