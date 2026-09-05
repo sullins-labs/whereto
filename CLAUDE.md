@@ -49,9 +49,11 @@ as unverified in production until it's been watched.
 The job: restores the `data/raw` archive from cache, verifies checksums,
 builds (`python -m etl.build`, using four API-key secrets — see below), runs
 the full test suite, archives redistributable-only source snapshots to a
-GitHub Release, and commits `data/dist/places.json` back to `main` as the
-`etl` bot user. It does not sync to sullinslabs or deploy — see "Publishing"
-above.
+GitHub Release, and commits `data/dist/places.json` back to `main` as
+`Josh Sullins <support@sullinslabs.com>` (the program's identity of record —
+not a bot account; a prior `etl@users.noreply.github.com` committer was
+retired for using a deprecated noreply address). It does not sync to
+sullinslabs or deploy — see "Publishing" above.
 
 Four secrets, all free-tier API keys, live in GitHub Settings → Secrets
 (never in files): `CENSUS_API_KEY`, `BLS_API_KEY`, `BEA_API_KEY`,
