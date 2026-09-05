@@ -14,19 +14,21 @@ piece: the code being readable *is* the artifact.
 
 Nothing secret lives in the repo. Keys go in Settings → Secrets, never in files.
 
-## 2. Free API keys: five forms, about fifteen minutes
+## 2. Free API keys: four forms, about fifteen minutes
 
 | Secret name | Register |
 |---|---|
 | `CENSUS_API_KEY` | api.census.gov/data/key_signup.html |
 | `BEA_API_KEY` | apps.bea.gov/API/signup |
 | `BLS_API_KEY` | data.bls.gov/registrationEngine |
-| `HUD_API_TOKEN` | huduser.gov/portal/dataset/fmr-api.html |
 | `FBI_CDE_API_KEY` | api.data.gov/signup |
 
 ```bash
 gh secret set CENSUS_API_KEY --body "..."
 ```
+
+`hud_fmr` uses HUD's unauthenticated bulk FMR spreadsheet download, not the
+tokenised per-county API. No `HUD_API_TOKEN` is needed.
 
 Register for BLS specifically. Unregistered is 25 calls a day against the 126
 this pipeline needs; registered is 500.

@@ -119,8 +119,11 @@ All free, all one form:
 | `CENSUS_API_KEY` | api.census.gov/data/key_signup.html |
 | `BLS_API_KEY` | data.bls.gov/registrationEngine |
 | `BEA_API_KEY` | apps.bea.gov/API/signup |
-| `HUD_API_TOKEN` | huduser.gov/portal/dataset/fmr-api.html |
 | `FBI_CDE_API_KEY` | api.data.gov/signup |
+
+`hud_fmr` fetches HUD's public bulk Fair Market Rents spreadsheet, not the
+tokenised per-county API. It is an unauthenticated download, so no HUD key
+is registered or used.
 
 ## Status
 
