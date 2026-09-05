@@ -99,6 +99,23 @@ COVERAGE_EXCEPTIONS = {
     # 0% after this line has been deleted, that is a real regression to
     # investigate, not a reason to re-add or widen this exception.
     "pcp_per_100k": 0.0,
+    # mental_health_per_100k is null on 100% of records for the identical
+    # reason as pcp_per_100k directly above: no AHRF extractor exists to
+    # supply mental_health_providers counts. etl/build.py's health() closure
+    # (lines ~143-156) passes None for both primary_care_physicians and
+    # mental_health_providers into hrsa_health.extract() deliberately, so a
+    # missing count stays null rather than collapsing to a literal 0 -- see
+    # the comment there. hrsa_health.py:51 (build()) then computes
+    # mental_health_per_100k as None whenever the count is None, the same
+    # divide-only-if-present pattern used for pcp_per_100k at line 50. This
+    # entry was simply missing from this registry when pcp_per_100k was
+    # added -- an oversight, not a new gap -- which is why
+    # test_contract_coverage was failing even though the underlying
+    # by-design null was already correct and already covered by comments in
+    # build.py and hrsa_health.py. ACKNOWLEDGED GAP AWAITING WORK, same as
+    # pcp_per_100k: remove this line only when an AHRF extractor lands and
+    # coverage rises durably above the generic 10% floor.
+    "mental_health_per_100k": 0.0,
 }
 
 # Fields allowed to be constant (or near-constant) across the dataset, with
