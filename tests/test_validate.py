@@ -73,4 +73,49 @@ out = check_baseline_regression(base_places, base_withheld, baseline)
 print("(c) baseline vs itself ->", out or "no findings")
 assert not out, "comparing the baseline to itself must not raise any finding"
 
+# (d) a county published in the baseline that is withheld in this build --
+# not dropped (it's still accounted for), but not free of consequence
+# either. One such county WARNs; more than 25 also BLOCKs with a single
+# dataset-level summary finding, since the point of a summary is that a
+# human doesn't have to count 26+ per-county lines to see why it blocked.
+newly_withheld_fips = base_places[10]["fips"]
+withheld_plus_one = base_withheld + [{"fips": newly_withheld_fips}]
+out = check_baseline_regression(base_places, withheld_plus_one, baseline)
+hit = [f for f in out if f.level == WARNING and f.field == "withheld" and f.place == newly_withheld_fips]
+print(f"\n(d) county {newly_withheld_fips} newly withheld (1 of them) ->",
+      hit[0].message if hit else "NOT CAUGHT")
+assert hit, "a county newly withheld vs. the baseline must WARN"
+assert not [f for f in out if f.level == BLOCKING and f.field == "withheld"], \
+    "one newly-withheld county must not trip the >25 BLOCKING summary"
+
+many_newly_withheld = [r["fips"] for r in base_places[:26]]
+withheld_plus_many = base_withheld + [{"fips": fp} for fp in many_newly_withheld]
+out = check_baseline_regression(base_places, withheld_plus_many, baseline)
+warns = [f for f in out if f.level == WARNING and f.field == "withheld"]
+summary = [f for f in out if f.level == BLOCKING and f.field == "withheld" and f.place == "dataset"]
+print(f"(d) {len(many_newly_withheld)} counties newly withheld ->",
+      summary[0].message if summary else "NOT CAUGHT")
+assert len(warns) == 26, "each newly-withheld county still gets its own WARNING past the threshold"
+assert summary, "more than 25 newly-withheld counties must also BLOCK with a dataset-level summary"
+
+# ---------------------------------------------------------------------------
+# Wiring: check_dataset(records, withheld) must actually invoke
+# check_baseline_regression() when withheld is not None. Every test above
+# calls check_baseline_regression() directly, which would still pass even if
+# the two-argument call site in build.py silently reverted to one argument
+# and disabled this whole guard under a green suite.
+# ---------------------------------------------------------------------------
+from unittest.mock import patch
+
+with patch("etl.validate.check_baseline_regression", return_value=[]) as mocked:
+    check_dataset([good], withheld=[])
+    assert mocked.called, "check_dataset must call check_baseline_regression when withheld is not None"
+print("\n(e) check_dataset(records, withheld=[...]) calls check_baseline_regression -> called",
+      mocked.call_count, "time(s)")
+
+with patch("etl.validate.check_baseline_regression", return_value=[]) as mocked:
+    check_dataset([good])
+    assert not mocked.called, "check_dataset must NOT call check_baseline_regression when withheld is omitted"
+print("(e) check_dataset(records) without withheld does not call check_baseline_regression -> not called")
+
 print("\nall assertions passed")
