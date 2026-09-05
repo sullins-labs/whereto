@@ -17,6 +17,10 @@ from ..snapshot import fetch
 # unavailable estimates. Treating them as numbers produces silent nonsense:
 # a county with a median home value of negative 666 million.
 ACS_NULLS = {-666666666, -999999999, -888888888, -555555555, -333333333, -222222222}
+# Python's int/float equality and hashing agree (-666666666 == -666666666.0
+# and hash() matches), so a float sentinel parsed from a decimal-looking
+# annotation code still matches this set via `in` below -- confirmed, not
+# assumed.
 
 
 def extract(vintage: int | None = None) -> dict[str, dict]:
@@ -42,11 +46,21 @@ def extract(vintage: int | None = None) -> dict[str, dict]:
         rec: dict = {"name": r[idx["NAME"]]}
         for var, field in varmap.items():
             raw = r[idx[var]]
+            # Most ACS variables here are whole-number counts or dollar
+            # amounts, so int is tried first for backward compatibility.
+            # median_age (B01002_001E) is a genuine decimal -- ACS reports
+            # medians like "39.5" because the Census computes them by
+            # interpolating within an age bracket rather than counting a
+            # literal middle person -- so int("39.5") raises ValueError and
+            # this must fall back to float rather than nulling the field out.
             try:
                 v = int(raw)
             except (TypeError, ValueError):
-                rec[field] = None
-                continue
+                try:
+                    v = float(raw)
+                except (TypeError, ValueError):
+                    rec[field] = None
+                    continue
             rec[field] = None if v in ACS_NULLS else v
 
         # Effective property tax rate, per county rather than per state.

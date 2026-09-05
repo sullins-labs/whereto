@@ -1,6 +1,6 @@
 """Offline tests for the two extractors that do real work rather than parsing.
 No network required."""
-import sys, pathlib
+import sys, pathlib, json, dataclasses, tempfile
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from etl.sources.noaa_normals import extract as climate
 from etl.sources.fbi_cde import aggregate as crime
@@ -72,4 +72,74 @@ assert _hud.key_style != "bearer", (
     f"an Authorization header on a source with no needs_key"
 )
 print("\n  hud_fmr Source declares no needs_key/bearer style — correct")
+
+# ---- Census ACS: median_age is a decimal, not an integer count ----
+#
+# int("39.5") raises ValueError. Every other ACS variable in the varmap
+# (population, income, home value, rent, taxes, housing units, commute,
+# bachelors) is a whole-number count or dollar figure, but B01002_001E
+# (median_age) is computed by the Census by interpolating within an age
+# bracket, so it comes back as a string like "39.5". Before this fix that
+# ValueError was caught by the same except clause used for genuinely
+# missing values and silently turned into None for essentially every
+# county -- which is exactly the 0.0%-populated symptom this test guards
+# against. This regression-tests the parser directly against a fixture
+# ACS response, with no network call: fetch() is monkeypatched to hand
+# back a fixture file instead of reaching the Census API.
+import etl.sources.census_acs as _census_acs
+
+_ACS_FIXTURE_VARMAP = {
+    "B01003_001E": "population",
+    "B01002_001E": "median_age",
+}
+
+
+def _fixture_fetch(_source_key, _url=None, **_kwargs):
+    rows = [
+        ["NAME", "B01003_001E", "B01002_001E", "state", "county"],
+        # decimal median age alongside a normal integer field
+        ["Fixture County A", "100000", "39.5", "42", "003"],
+        # integer fields must still come back as int, not float, once a
+        # decimal field elsewhere in the same varmap starts using float
+        ["Fixture County B", "250000", "41", "42", "005"],
+        # sentinel-null case: an annotation code that only fails int()
+        # parsing (decimal-looking), proving the float fallback still
+        # respects ACS_NULLS rather than treating -666666666.0 as a real
+        # median age
+        ["Fixture County C", "50000", "-666666666.0", "42", "007"],
+    ]
+    tf = tempfile.NamedTemporaryFile(
+        mode="w", suffix=".json", delete=False, encoding="utf-8")
+    json.dump(rows, tf)
+    tf.close()
+    return pathlib.Path(tf.name)
+
+
+_orig_fetch = _census_acs.fetch
+_orig_source = _census_acs.SOURCES["census_acs5"]
+try:
+    _census_acs.fetch = _fixture_fetch
+    _census_acs.SOURCES["census_acs5"] = dataclasses.replace(
+        _orig_source, params={"vintage": 2024, "variables": _ACS_FIXTURE_VARMAP})
+    _acs_out = _census_acs.extract()
+finally:
+    _census_acs.fetch = _orig_fetch
+    _census_acs.SOURCES["census_acs5"] = _orig_source
+
+print("\nCensus ACS median_age parsing:")
+for f, r in _acs_out.items():
+    print(f"  {f}: {r}")
+
+_a, _b, _c = _acs_out["42003"], _acs_out["42005"], _acs_out["42007"]
+assert _a["median_age"] == 39.5 and isinstance(_a["median_age"], float), (
+    f"decimal median_age should parse as float 39.5, got {_a['median_age']!r}")
+assert _b["population"] == 250000 and isinstance(_b["population"], int), (
+    "existing integer fields must still parse as int, not float, "
+    f"got {_b['population']!r} ({type(_b['population'])})")
+assert _c["median_age"] is None, (
+    "a float-shaped ACS sentinel (-666666666.0) must still be filtered to "
+    f"None via ACS_NULLS, got {_c['median_age']!r}")
+print("  decimal median_age -> float, integer fields unaffected, "
+      "float sentinel still nulled — correct")
+
 print("\nall assertions passed")
