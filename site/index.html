@@ -881,7 +881,7 @@ async function loadData(){
     withheld: payload.withheld || [],
     /* degradedKeys is the real signal, keyed by the ETL's source key, once
        the pipeline publishes payload.degraded_sources. degradedNames is a
-       client-side stand-in for runs where that field is absent — see
+       client-side stand-in for runs where that field is absent; see
        deriveDegradedSourceNames() below. Only one of the two is ever
        populated; renderSources() checks both so it works either way. */
     degradedKeys: new Set(payload.degraded_sources || []),
@@ -974,11 +974,11 @@ const SOURCE_STAGE=[
    (site/data/places.json) predates payload.degraded_sources, so there is no
    server-side signal that a source silently fell back. This reconstructs the
    same conclusion client-side from the one field each source alone is
-   responsible for — general on purpose, so the next source that goes quiet
+   responsible for, general on purpose, so the next source that goes quiet
    surfaces the same way HUD does here, without anyone touching this file.
    Once the pipeline emits degraded_sources, DATA_META.degradedNames stays
    null and this whole block goes dead; delete it and
-   deriveDegradedSourceNames() then. The note text is optional per entry —
+   deriveDegradedSourceNames() then. The note text is optional per entry:
    only HUD has approved wording as of 2026-08-22, so only HUD gets a
    tooltip; the others still surface as "using fallback" with no tooltip
    rather than inventing copy nobody has signed off on. */
@@ -994,7 +994,7 @@ const SOURCE_OWNED_FIELD=[
 /* Below this share of records carrying a value in the field a source alone
    owns, call the source degraded. Set well under 1.0 on purpose: ordinary
    sparse coverage (a few counties an agency never reports to) is not the
-   same failure as a source going down and something else covering for it —
+   same failure as a source going down and something else covering for it:
    see crime_coverage, which already has a legitimate, non-zero null rate in
    healthy data. */
 const FALLBACK_MIN_POPULATION=0.5;
@@ -1214,7 +1214,7 @@ function economics(L,s){
    One-sided by deliberate design: these sliders are tolerance limits
    against AVERAGE conditions, not ideal points, so only exceeding the
    limit costs anything. A summer milder than the ceiling or a winter
-   warmer than the floor is neutral, not rewarded — rewarding margin
+   warmer than the floor is neutral, not rewarded; rewarding margin
    would just reintroduce ideal-point scoring under a new name. The
    excess penalty stays linear (not a hard cliff) because both the
    user's number and the county's are averages, not caps. */
