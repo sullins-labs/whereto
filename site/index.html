@@ -165,6 +165,8 @@ button{cursor:pointer;background:none;border:none;padding:0}
   background:var(--surface);border-bottom:1px solid var(--outline-soft);
 }
 .resbar[hidden]{display:none}
+.resbar.idle .resbar-label,.resbar.idle .resbar-fit{display:none}
+.resbar.idle .resbar-name{color:var(--on-var);font-weight:400}
 .resbar-in{
   max-width:var(--maxw);margin:0 auto;padding:0 24px;height:100%;
   display:flex;align-items:center;gap:10px;flex-wrap:nowrap;overflow:hidden;
@@ -963,6 +965,15 @@ function updateResultsBar(top,total){
     document.documentElement.classList.remove("has-bar");
     return;
   }
+  if(!state.chosen){
+    bar.classList.add("idle");
+    $("#resbar-name").textContent="Set your priorities to see a match";
+    $("#resbar-fit").textContent="";
+    bar.hidden=false;
+    document.documentElement.classList.add("has-bar");
+    return;
+  }
+  bar.classList.remove("idle");
   /* title already carries the state, because the anchor name does. Appending
      L.a.st gave "Rural, near Plainview, TX, TX". */
   $("#resbar-name").textContent=top.L.title;
@@ -1107,7 +1118,11 @@ const state={
   tenure:"own", portable:"remote",
   ring:-1, allrings:false,
   maxhome:0, minlot:0, maxcommute:0, region:"all",
-  open:null
+  open:null,
+  /* True once the visitor has clicked a life-stage or ring pill (including the
+     one already pressed). Until then the Top match bar is a prompt, because
+     the defaults are a starting point, not an answer. */
+  chosen:false
 };
 
 /* ---------- tax ---------- */
@@ -1690,6 +1705,7 @@ function pillGroup(sel,key,num,after){
   $(sel).addEventListener("click",e=>{
     const b=e.target.closest("button"); if(!b)return;
     state[key]=num?+b.dataset.v:b.dataset.v;
+    if(key==="phase"||key==="ring") state.chosen=true;
     b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));
     if(after)after(); render();
   });
