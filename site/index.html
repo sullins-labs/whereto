@@ -69,7 +69,7 @@
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;overflow-x:clip}
 body{
   background:var(--bg);color:var(--on);
   font-family:var(--f-body);font-size:14.5px;line-height:1.5;
@@ -353,6 +353,9 @@ button{cursor:pointer;background:none;border:none;padding:0}
   z-index:51;display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(13,32,51,.12);
 }
 .sheet.on{transform:none}
+/* Closed, the sheet sits off-screen at translateX(100%). Hide it from layout
+   engines too, so it cannot widen the scrollable area on mobile browsers. */
+.sheet:not(.on){visibility:hidden;transition:transform .27s cubic-bezier(.4,0,.2,1),visibility 0s .27s}
 .sheet-hd{
   padding:18px 22px 15px;background:var(--surface);
   border-bottom:1px solid var(--outline-soft);
@@ -434,6 +437,23 @@ footer{max-width:var(--maxw);margin:0 auto;padding:22px 24px 44px;font-size:12.5
   .row{grid-template-columns:26px minmax(0,1fr) 56px;gap:12px}
   .sig{display:none}
   .sheet{width:100%}
+}
+/* Narrow screens: one line cannot hold label, name, fit and link, so the name
+   was clipped to "Rural, near T...". Two rows instead: label, fit and link
+   on top, the full name beneath. The match count drops out to make room. */
+@media (max-width:600px){
+  :root.has-bar{--bar:62px}
+  .resbar{height:62px}
+  .resbar-in{
+    display:grid;grid-template-columns:auto 1fr auto;
+    grid-template-areas:"label fit jump" "name name name";
+    align-items:center;column-gap:10px;row-gap:2px;padding:0 16px;
+  }
+  .resbar-label{grid-area:label}
+  .resbar-fit{grid-area:fit}
+  .resbar-jump{grid-area:jump;margin-left:0}
+  .resbar-name{grid-area:name;max-width:none;min-width:0}
+  .resbar-count{display:none}
 }
 @media (max-width:430px){
   .masthead-q{display:none}
@@ -946,8 +966,8 @@ function updateResultsBar(top,total){
   /* title already carries the state, because the anchor name does. Appending
      L.a.st gave "Rural, near Plainview, TX, TX". */
   $("#resbar-name").textContent=top.L.title;
-  $("#resbar-fit").textContent="fit "+Math.round(top.fit)+
-    (total?" · "+total.toLocaleString()+" match":"");
+  $("#resbar-fit").innerHTML="fit "+Math.round(top.fit)+
+    (total?"<span class=\"resbar-count\"> · "+total.toLocaleString()+" match</span>":"");
   bar.hidden=false;
   document.documentElement.classList.add("has-bar");
 }
